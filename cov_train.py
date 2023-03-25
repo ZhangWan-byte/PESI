@@ -511,21 +511,21 @@ def cov_train(config):
         print("fold {} as val set".format(k_iter))
 
         # model name
-        if config["model_name"][:-3]=="lstm":
+        if config["model_name"][:-3]=="lstm" or config["model_name"]=="lstm":
             config = prepare_lstm(config)
-        elif config["model_name"][:-3]=="textcnn":
+        elif config["model_name"][:-3]=="textcnn" or config["model_name"]=="textcnn":
             config = prepare_textcnn(config)
-        elif config["model_name"][:-3]=="masonscnn":
+        elif config["model_name"][:-3]=="masonscnn" or config["model_name"]=="masonscnn":
             config = prepare_masonscnn(config)
-        elif config["model_name"][:-3]=="ag_fast_parapred":
+        elif config["model_name"][:-3]=="ag_fast_parapred" or config["model_name"]=="ag_fast_parapred":
             config = prepare_ag_fast_parapred(config)
-        elif config["model_name"][:-3]=="pipr":
+        elif config["model_name"][:-3]=="pipr" or config["model_name"]=="pipr":
             config = prepare_pipr(config)
-        elif config["model_name"][:-3]=="resppi":
+        elif config["model_name"][:-3]=="resppi" or config["model_name"]=="resppi":
             config = prepare_resppi(config)
-        elif config["model_name"][:-3]=="deepaai":
+        elif config["model_name"][:-3]=="deepaai" or config["model_name"]=="deepaai":
             config = prepare_deepaai(config)
-        elif config["model_name"][:-3]=="pesi":
+        elif config["model_name"][:-3]=="pesi" or config["model_name"]=="pesi":
             config = prepare_pesi(config)
         else:
             print("wrong model name")
