@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "cov_train.py", line 969, in <module>
+    use_fine_tune = True if sys.argv[2]=="ft" else False
+IndexError: list index out of range
