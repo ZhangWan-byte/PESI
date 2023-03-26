@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+import shutil
 import warnings
 warnings.filterwarnings('ignore')
 import argparse
@@ -492,7 +493,7 @@ def prepare_pesi(config):
     return config
 
 
-def cov_train(config):
+def cov_train(config, result_path):
 
     if config["use_fine_tune"]==True:
         if "ft" not in config["model_name"]:
@@ -501,8 +502,8 @@ def cov_train(config):
         if config["use_pair"]==True:
             config["model_name"] += "_pairPreTrain"
 
-    print("make folder ./results/CoV-AbDab/{}/".format(config["model_name"]))
-    os.makedirs("./results/CoV-AbDab/{}/".format(config["model_name"]), exist_ok=True)
+    # print("make folder ./results/CoV-AbDab/{}/".format(config["model_name"]))
+    # os.makedirs("./results/CoV-AbDab/{}/".format(config["model_name"]), exist_ok=True)
 
     print("model name: {}\tuse_fine_tune: {}".format(config["model_name"], config["use_fine_tune"]))
 
@@ -927,23 +928,23 @@ def cov_train(config):
                 
                 if np.mean(val_loss_tmp)<best_val_loss:
                     best_val_loss = np.mean(val_loss_tmp)
-                    torch.save(config["model"], "./results/CoV-AbDab/{}/model_{}_best.pth".format(config["model_name"], k_iter))
-                    np.save("./results/CoV-AbDab/{}/val_acc_{}_best.npy".format(config["model_name"], k_iter), acc)
-                    np.save("./results/CoV-AbDab/{}/val_f1_{}_best.npy".format(config["model_name"], k_iter), f1)
-                    np.save("./results/CoV-AbDab/{}/val_auc_{}_best.npy".format(config["model_name"], k_iter), auc)
-                    np.save("./results/CoV-AbDab/{}/val_gmean_{}_best.npy".format(config["model_name"], k_iter), gmean)
-                    np.save("./results/CoV-AbDab/{}/val_mcc_{}_best.npy".format(config["model_name"], k_iter), mcc)
+                    torch.save(config["model"], "{}/model_{}_best.pth".format(result_path, k_iter))
+                    np.save("{}/val_acc_{}_best.npy".format(result_path, k_iter), acc)
+                    np.save("{}/val_f1_{}_best.npy".format(result_path, k_iter), f1)
+                    np.save("{}/val_auc_{}_best.npy".format(result_path, k_iter), auc)
+                    np.save("{}/val_gmean_{}_best.npy".format(result_path, k_iter), gmean)
+                    np.save("{}/val_mcc_{}_best.npy".format(result_path, k_iter), mcc)
 
             config["model"].train()
         
-        torch.save(config["model"], "./results/CoV-AbDab/{}/model_{}.pth".format(config["model_name"], k_iter))
-        np.save("./results/CoV-AbDab/{}/loss_buf_{}.npy".format(config["model_name"], k_iter), np.array(loss_buf))
-        np.save("./results/CoV-AbDab/{}/val_loss_buf_{}.npy".format(config["model_name"], k_iter), np.array(val_loss_buf))
-        np.save("./results/CoV-AbDab/{}/val_acc_buf_{}.npy".format(config["model_name"], k_iter), np.array(val_acc_buf))
-        np.save("./results/CoV-AbDab/{}/val_f1_buf_{}.npy".format(config["model_name"], k_iter), np.array(val_f1_buf))
-        np.save("./results/CoV-AbDab/{}/val_auc_buf_{}.npy".format(config["model_name"], k_iter), np.array(val_auc_buf))
-        np.save("./results/CoV-AbDab/{}/val_gmean_buf_{}.npy".format(config["model_name"], k_iter), np.array(val_gmean_buf))
-        np.save("./results/CoV-AbDab/{}/val_mcc_buf_{}.npy".format(config["model_name"], k_iter), np.array(val_mcc_buf))
+        torch.save(config["model"], "{}/model_{}.pth".format(result_path, k_iter))
+        np.save("{}/loss_buf_{}.npy".format(result_path, k_iter), np.array(loss_buf))
+        np.save("{}/val_loss_buf_{}.npy".format(result_path, k_iter), np.array(val_loss_buf))
+        np.save("{}/val_acc_buf_{}.npy".format(result_path, k_iter), np.array(val_acc_buf))
+        np.save("{}/val_f1_buf_{}.npy".format(result_path, k_iter), np.array(val_f1_buf))
+        np.save("{}/val_auc_buf_{}.npy".format(result_path, k_iter), np.array(val_auc_buf))
+        np.save("{}/val_gmean_buf_{}.npy".format(result_path, k_iter), np.array(val_gmean_buf))
+        np.save("{}/val_mcc_buf_{}.npy".format(result_path, k_iter), np.array(val_mcc_buf))
         
         
         kfold_labels.append(labels)
@@ -973,17 +974,21 @@ if __name__=='__main__':
     parser.add_argument('--config', type=str, default=None, help='config file path')
     args = parser.parse_args()
     print(args.config)
-    # config = load_model_op_configs(args.config)
+
     with open(args.config) as json_file:
         config = json.load(json_file)
     print(config)
 
     # training
+    current_time = time.strftime('%m-%d-%H-%M', time.localtime())
+    result_path = "./results/CoV-AbDab/{}_{}".format(config["model_name"], current_time)
+    os.makedirs(result_path)
+
+    shutil.copy(args.config, result_path)
+
     for i in range(config["ntimes"]):
         print("Run {} times of {}fold".format(config["ntimes"], config["kfold"]))
-        result = cov_train(config=config)
-        current_time = time.strftime('%m-%d-%H-%M', time.localtime())
+        result = cov_train(config=config, result_path=result_path)
         print("Results dump to: ")
-        os.makedirs("./results/CoV-AbDab/{}_{}".format(config["model_name"], current_time))
-        print("./results/CoV-AbDab/{}_{}/result_{}.pkl".format(config["model_name"], current_time, i))
-        pickle.dump(result, open("./results/CoV-AbDab/{}/result_{}.pkl".format(config["model_name"], i), "wb"))
+        print("{}/result_{}.pkl".format(result_path, i, i))
+        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i, i)), "wb")

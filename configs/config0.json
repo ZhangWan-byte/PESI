@@ -16,6 +16,5 @@
     
     "model_name": "pesi", 
     
-    "clip_norm": 1, 
-    
+    "clip_norm": 1   
 }
