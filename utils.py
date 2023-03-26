@@ -1,4 +1,5 @@
 import os
+import json
 import copy
 import heapq
 import pickle
@@ -232,3 +233,7 @@ def seq_pad_clip(seq, target_length=800):
         
         return subseq
 
+def load_model_op_configs(path):
+    with open(path) as json_file:
+        data = json.load(json_file)
+    return data

@@ -1,0 +1,31 @@
+// model_name = sys.argv[1]
+// use_fine_tune = True if sys.argv[2]=="ft" else False
+// print("use_fine_tune: {}".format(use_fine_tune))
+
+{
+    // data type
+    "data_type": "seq1_neg0", 
+    "data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
+
+    // fine-tuning params
+    "use_fine_tune": false,                 // load pre-trained weights as initialisation
+    "fix_FE": false,                        // only load pre-trained feature extractor weights
+    "use_pair": false,                      // whether using pairwise pre-training or not
+
+    // training params
+    "use_reg": 0,                           // regularisation type: 0 - L2; 1 - L1
+    "use_BSS": false,                       // Batch Spectral Shrinkage regularisation
+    "use_aug": true,                        // True: my_collate_fn1 for testing, my_collate_fn2 for training
+
+    // experiment params
+    "ntimes": 1,                            // repeat ntimes of kfold
+    "kfold": 10,                            // kfold cross validation
+    "batch_size": 16,                       // batch size
+
+    // model params
+    "model_name": "pesi",                   // masonscnn/lstm/textcnn/ag_fast_parapred/pipr/resppi/pesi
+
+    // training params
+    "clip_norm": 1                          // gradient clipping norm
+
+}

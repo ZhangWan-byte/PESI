@@ -1,6 +1,10 @@
 import os
 import sys
 import time
+import json
+import warnings
+warnings.filterwarnings('ignore')
+import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -965,44 +969,21 @@ if __name__=='__main__':
     # model_name = "resppi"
     # model_name = "pesi"
 
-    model_name = sys.argv[1]
-    use_fine_tune = True if sys.argv[2]=="ft" else False
-    print("use_fine_tune: {}".format(use_fine_tune))
-
-    config = {
-        # data type
-        "clip_norm": 1, 
-        "data_type": "seq1_neg0", 
-        "data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
-
-        # fine-tuning params
-        "use_fine_tune": use_fine_tune,         # load pre-trained weights as initialisation
-        "fix_FE": False,                        # only load pre-trained feature extractor weights
-        "use_pair": False,                      # whether using pairwise pre-training or not
-
-        # training params
-        "use_reg": 0,                           # regularisation type: 0 - L2; 1 - L1
-        "use_BSS": False,                       # Batch Spectral Shrinkage regularisation
-        "use_aug": True,                        # True: my_collate_fn1 for testing, my_collate_fn2 for training
-
-        # experiment params
-        "ntimes": 3,                            # repeat ntimes of kfold
-        "kfold": 10,                            # kfold cross validation
-        "batch_size": 16,                       # batch size
-
-        # model_params
-        "model_name":model_name
-
-    }
-
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default=None, help='config file path')
+    args = parser.parse_args()
+    print(args.config)
+    # config = load_model_op_configs(args.config)
+    with open(args.config) as json_file:
+        config = json.load(json_file)
     print(config)
 
     # training
     for i in range(config["ntimes"]):
         print("Run {} times of {}fold".format(config["ntimes"], config["kfold"]))
         result = cov_train(config=config)
-        # current_time = time.strftime('%Y-%m-%d-%H-%M', time.localtime())
+        current_time = time.strftime('%m-%d-%H-%M', time.localtime())
         print("Results dump to: ")
-        print("./results/CoV-AbDab/{}/result_{}.pkl".format(config["model_name"], i))
+        os.makedirs("./results/CoV-AbDab/{}_{}".format(config["model_name"], current_time))
+        print("./results/CoV-AbDab/{}_{}/result_{}.pkl".format(config["model_name"], current_time, i))
         pickle.dump(result, open("./results/CoV-AbDab/{}/result_{}.pkl".format(config["model_name"], i), "wb"))

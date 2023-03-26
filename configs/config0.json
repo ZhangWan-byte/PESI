@@ -1,0 +1,21 @@
+{
+    "data_type": "seq1_neg0", 
+    "data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
+
+    "use_fine_tune": 0,
+    "fix_FE": 0, 
+    "use_pair": 0, 
+    
+    "use_reg": 0, 
+    "use_BSS": 0, 
+    "use_aug": 1, 
+    
+    "ntimes": 1, 
+    "kfold": 10, 
+    "batch_size": 16, 
+    
+    "model_name": "pesi", 
+    
+    "clip_norm": 1, 
+    
+}
