@@ -205,6 +205,8 @@ def pre_train(config):
     val_acc_buf = []
     val_f1_buf = []
     val_auc_buf = []
+    val_gmean_buf = []
+    val_mcc_buf = []
     best_train_loss = float("inf")
     best_val_loss = float("inf")
 
@@ -307,13 +309,16 @@ def pre_train(config):
                 preds = torch.hstack(preds).view(-1)
                 labels = torch.hstack(labels).view(-1)
 
-                acc = accuracy_score(y_true=labels, y_pred=torch.round(preds))
-                f1 = f1_score(y_true=labels, y_pred=torch.round(preds))
-                auc = roc_auc_score(y_true=labels, y_score=preds)
+                # acc = accuracy_score(y_true=labels, y_pred=torch.round(preds))
+                # f1 = f1_score(y_true=labels, y_pred=torch.round(preds))
+                # auc = roc_auc_score(y_true=labels, y_score=preds)
+                acc, f1, auc, gmean, mcc = evaluate_metrics(pred_proba=preds, label=labels)
 
                 val_acc_buf.append(acc)
                 val_f1_buf.append(f1)
                 val_auc_buf.append(auc)
+                val_gmean_buf.append(gmean)
+                val_mcc_buf.append(mcc)
                 val_loss_buf.append(np.mean(val_loss_tmp))
 
                 print("Epoch {}: \n Train Loss\t{:.4f} \n Val Loss\t{:.4f} \n Val Acc\t{:.4f} \n Val F1\t\t{:.4f} \n Val AUC\t{:.4f}".format(epoch, np.mean(loss_buf), np.mean(val_loss_buf), acc, f1, auc))
@@ -324,6 +329,8 @@ def pre_train(config):
                     np.save("./results/SAbDab/full/{}/{}/val_acc_best.npy".format(config["data_type"], config["model_name"]), acc)
                     np.save("./results/SAbDab/full/{}/{}/val_f1_best.npy".format(config["data_type"], config["model_name"]), f1)
                     np.save("./results/SAbDab/full/{}/{}/val_auc_best.npy".format(config["data_type"], config["model_name"]), auc)
+                    np.save("./results/SAbDab/full/{}/{}/val_gmean_best.npy".format(config["data_type"], config["model_name"]), gmean)
+                    np.save("./results/SAbDab/full/{}/{}/val_mcc_best.npy".format(config["data_type"], config["model_name"]), mcc)
 
         elif config["use_pair"]==True:
 #             if np.mean(loss_tmp)<best_train_loss:
@@ -389,6 +396,8 @@ def pre_train(config):
         np.save("./results/SAbDab/full/{}/{}/val_acc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_acc_buf))
         np.save("./results/SAbDab/full/{}/{}/val_f1_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_f1_buf))
         np.save("./results/SAbDab/full/{}/{}/val_auc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_auc_buf))
+        np.save("./results/SAbDab/full/{}/{}/val_gmean_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_gmean_buf))
+        np.save("./results/SAbDab/full/{}/{}/val_mcc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_mcc_buf))
 
 
     #     break
@@ -419,7 +428,7 @@ if __name__=='__main__':
         "seq_clip_mode": 1,                     # how to choose epitope: 0 - random AA sequence as epitope; 1 - k-nearest AA as epitope
         "neg_sample_mode": 0,                   # how to generate negative sample: 0 - random sample with dissimilarity rate 90% 1 - random sequence;
         "data_type": "seq1_neg0", 
-        "data_path": "./data/data_list.pkl",    # data path for general antibody-antigen dataset
+        "data_path": "../codes/data/data_list.pkl",    # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
         "use_cache": True,                      # whether using cached pair data
@@ -441,9 +450,9 @@ if __name__=='__main__':
     }
 
     if config["use_pair"]==False:
-        config["folds_path"] = "./data/processed_data_clip1_neg0.pkl"
+        config["folds_path"] = "../codes/data/processed_data_clip1_neg0.pkl"
     elif config["use_pair"]==True:
-        config["folds_path"] = "./data/processed_data_clip1_neg0_usepairTrue.pkl"
+        config["folds_path"] = "../codes/processed_data_clip1_neg0_usepairTrue.pkl"
     else:
         config["folds_path"] = None
 
