@@ -2,7 +2,7 @@
     "data_type": "seq1_neg0", 
     "data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
 
-    "use_fine_tune": 0,
+    "use_fine_tune": 1,
     "fix_FE": 0, 
     "use_pair": 0, 
     
