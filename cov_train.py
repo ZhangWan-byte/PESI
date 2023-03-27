@@ -990,5 +990,5 @@ if __name__=='__main__':
         print("Run {} times of {}fold".format(config["ntimes"], config["kfold"]))
         result = cov_train(config=config, result_path=result_path)
         print("Results dump to: ")
-        print("{}/result_{}.pkl".format(result_path, i, i))
-        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i, i)), "wb")
+        print("{}/result_{}.pkl".format(result_path, i))
+        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i)), "wb")
