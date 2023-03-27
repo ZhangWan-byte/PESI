@@ -126,7 +126,7 @@ def prepare_pesi(config):
     
     config["epochs"] = 500
     config["lr"] = 6e-5
-    config["l2_coef"] = 5e-4
+    config["l2_coef"] = 1e-3
 
     return config
 
@@ -156,6 +156,9 @@ def pre_train(config):
 
     if config["use_pair"]==True:
         config["model_name"] += "_encoder"
+
+    if config["use_L2"]==True:
+        config["model_name"] += "_L2"
 
     print("training {} on SAbDab-full".format(config["model_name"]))
     
@@ -190,9 +193,6 @@ def pre_train(config):
                                                 shuffle=False, 
                                                 collate_fn=func)
 
-    
-    if config["use_L2"]==True:
-        model_name += "_L2"
 
     print("model parameters: ", sum(p.numel() for p in config["model"].parameters() if p.requires_grad))
 
@@ -209,6 +209,10 @@ def pre_train(config):
     val_mcc_buf = []
     best_train_loss = float("inf")
     best_val_loss = float("inf")
+    best_val_f1 = 0.0
+    best_val_auc = 0.0
+    best_val_gmean = 0.0
+    best_val_mcc = 0
 
     for epoch in range(config["epochs"]):
 
@@ -323,6 +327,7 @@ def pre_train(config):
 
                 print("Epoch {}: \n Train Loss\t{:.4f} \n Val Loss\t{:.4f} \n Val Acc\t{:.4f} \n Val F1\t\t{:.4f} \n Val AUC\t{:.4f}".format(epoch, np.mean(loss_buf), np.mean(val_loss_buf), acc, f1, auc))
 
+                # save best loss
                 if np.mean(val_loss_tmp)<best_val_loss:
                     best_val_loss = np.mean(val_loss_tmp)
                     torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_best.pth".format(config["data_type"], config["model_name"]))
@@ -331,6 +336,42 @@ def pre_train(config):
                     np.save("./results/SAbDab/full/{}/{}/val_auc_best.npy".format(config["data_type"], config["model_name"]), auc)
                     np.save("./results/SAbDab/full/{}/{}/val_gmean_best.npy".format(config["data_type"], config["model_name"]), gmean)
                     np.save("./results/SAbDab/full/{}/{}/val_mcc_best.npy".format(config["data_type"], config["model_name"]), mcc)
+
+                # save best f1
+                if f1 > best_val_f1:
+                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestf1.pth".format(config["data_type"], config["model_name"]))
+                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestf1.npy".format(config["data_type"], config["model_name"]), acc)
+                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestf1.npy".format(config["data_type"], config["model_name"]), f1)
+                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestf1.npy".format(config["data_type"], config["model_name"]), auc)
+                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestf1.npy".format(config["data_type"], config["model_name"]), gmean)
+                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestf1.npy".format(config["data_type"], config["model_name"]), mcc)
+
+                # save best auc
+                if auc > best_val_auc:
+                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestauc.pth".format(config["data_type"], config["model_name"]))
+                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestauc.npy".format(config["data_type"], config["model_name"]), acc)
+                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestauc.npy".format(config["data_type"], config["model_name"]), f1)
+                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestauc.npy".format(config["data_type"], config["model_name"]), auc)
+                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestauc.npy".format(config["data_type"], config["model_name"]), gmean)
+                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestauc.npy".format(config["data_type"], config["model_name"]), mcc)
+
+                # save best gmean
+                if gmean > best_val_gmean:
+                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestgmean.pth".format(config["data_type"], config["model_name"]))
+                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestgmean.npy".format(config["data_type"], config["model_name"]), acc)
+                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestgmean.npy".format(config["data_type"], config["model_name"]), f1)
+                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestgmean.npy".format(config["data_type"], config["model_name"]), auc)
+                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestgmean.npy".format(config["data_type"], config["model_name"]), gmean)
+                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestgmean.npy".format(config["data_type"], config["model_name"]), mcc)
+
+                # save best mcc
+                if mcc > best_val_mcc:
+                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestmcc.pth".format(config["data_type"], config["model_name"]))
+                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestmcc.npy".format(config["data_type"], config["model_name"]), acc)
+                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestmcc.npy".format(config["data_type"], config["model_name"]), f1)
+                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestmcc.npy".format(config["data_type"], config["model_name"]), auc)
+                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestmcc.npy".format(config["data_type"], config["model_name"]), gmean)
+                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestmcc.npy".format(config["data_type"], config["model_name"]), mcc)
 
         elif config["use_pair"]==True:
 #             if np.mean(loss_tmp)<best_train_loss:
@@ -438,7 +479,7 @@ if __name__=='__main__':
         "use_L2": False,                        # whether using L2 regularisation for pre-training
         "use_pair": False,                      # whether using pairwise pre-training or not
         "num_neg": 4,                           # number of negative samples per positive pair
-        "use_reg": 0,                           # regularisation type: 0 - L2; 1 - L1
+        # "use_reg": 0,                           # regularisation type: 0 - L2; 1 - L1
         "use_BSS": False,                       # Batch Spectral Shrinkage regularisation
 
         "batch_size": 16,                       # batch size
