@@ -451,8 +451,8 @@ def pre_train(config):
 
 if __name__=='__main__':
 
-    # set_seed(seed=3407)
-    set_seed(seed=42)
+    set_seed(seed=3407)
+    # set_seed(seed=42)
 
     # # model_name = "masonscnn"
     # # model_name = "lstm"

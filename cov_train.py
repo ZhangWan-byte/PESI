@@ -385,8 +385,8 @@ def prepare_pesi(config):
                                          dropout=0.5, 
                                          use_coattn=True, 
                                          share=False, 
-                                         use_BSS=False).cuda()
-        config["epochs"] = 500
+                                         use_BSS=config["use_BSS"]).cuda()
+        config["epochs"] = 200
         config["lr"] = 6e-5
         config["l2_coef"] = 5e-4
         
@@ -406,7 +406,7 @@ def prepare_pesi(config):
                 for name, param in config["model"].epi_dec.named_parameters():
                     param.requires_grad = False
             
-            config["epochs"] = 500
+            config["epochs"] = 200
             config["lr"] = 6e-5
             config["l2_coef"] = 5e-4
             # model = SetTransformer(dim_input=32, 
@@ -438,7 +438,7 @@ def prepare_pesi(config):
             config["model"] = SetTransformer(dim_input=32, 
                                             num_outputs=32, 
                                             dim_output=32, 
-                                            dim_hidden=64, 
+                                            dim_hidden=128, 
                                             num_inds=6, 
                                             num_heads=4, 
                                             ln=True, 
@@ -448,8 +448,9 @@ def prepare_pesi(config):
                                             use_BSS=True).cuda()
         
             # load pre-trained weights
-            pt_model = torch.load("./results/SAbDab/full/seq1_neg0/SetCoAttnTransformer/model_best.pth")
-        
+            # pt_model = torch.load("./results/SAbDab/full/seq1_neg0/SetCoAttnTransformer/model_best.pth")
+            pt_model = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
+
             config["model"].embedding = pt_model.embedding
             
             config["model"].para_enc = pt_model.para_enc
@@ -465,7 +466,7 @@ def prepare_pesi(config):
             config["model"].train()
         
             # params
-            config["epochs"] = 500
+            config["epochs"] = 200
             config["lr"] = 6e-5
             config["l2_coef"] = 5e-4
         else:
@@ -544,7 +545,7 @@ def cov_train(config, result_path):
                                    is_train_test_full="train", 
                                    use_pair=config["use_pair"], 
                                    balance_samples=False)
-        collate_fn_train = my_collate_fn2 if config["use_aug"]==1 else collate_fn
+        collate_fn_train = my_collate_fn2 if config["use_aug"]==True else collate_fn
         train_loader = torch.utils.data.DataLoader(train_dataset, 
                                                    batch_size=config["batch_size"], 
                                                    shuffle=False, 
@@ -556,7 +557,7 @@ def cov_train(config, result_path):
                                   is_train_test_full="test", 
                                   use_pair=config["use_pair"], 
                                   balance_samples=False)
-        collate_fn_test = my_collate_fn1 if config["use_aug"]==1 else collate_fn
+        collate_fn_test = my_collate_fn1 if config["use_aug"]==True else collate_fn
         test_loader = torch.utils.data.DataLoader(test_dataset, 
                                                   batch_size=1, 
                                                   shuffle=False, 
@@ -858,14 +859,14 @@ def cov_train(config, result_path):
                     
                 loss = criterion(pred.view(-1), label.view(-1).cuda())
                 
-                if config["use_reg"]==0:
+                if config["use_reg"]==False:
                     param_l2_loss = 0
                     for name, param in config["model"].named_parameters():
                         if 'bias' not in name:
                             param_l2_loss += torch.norm(param, p=2)
                     param_l2_loss = config["l2_coef"] * param_l2_loss
                     loss += param_l2_loss
-                elif config["use_reg"]==1:
+                elif config["use_reg"]==True:
                     param_l1_loss = 0
                     for name, param in config["model"].named_parameters():
                         if 'bias' not in name:
@@ -961,8 +962,8 @@ def cov_train(config, result_path):
 
 if __name__=='__main__':
 
-    # set_seed(seed=3407)
-    set_seed(seed=42)
+    set_seed(seed=3407)
+    # set_seed(seed=42)
 
     # model_name = "masonscnn"
     # model_name = "lstm"
@@ -979,6 +980,14 @@ if __name__=='__main__':
 
     with open(args.config) as json_file:
         config = json.load(json_file)
+    
+    # alter int to boolean
+    for k in config:
+        if config[k]==1:
+            config[k]=True
+        if config[k]==0:
+            config[k]=False
+
     print(config)
 
     # training
