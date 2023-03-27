@@ -392,7 +392,8 @@ def prepare_pesi(config):
         
     elif config["model_name"]=="pesi_ft":
         if config["use_BSS"]==False:
-            config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
+            # config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
+            config["model"] = torch.load("./model_best.pth")
             config["model"].train()
 
             if config["fix_FE"]==True:
@@ -542,7 +543,7 @@ def cov_train(config, result_path):
                                    is_train_test_full="train", 
                                    use_pair=config["use_pair"], 
                                    balance_samples=False)
-        collate_fn_train = my_collate_fn2 if config["use_aug"]==True else collate_fn
+        collate_fn_train = my_collate_fn2 if config["use_aug"]==1 else collate_fn
         train_loader = torch.utils.data.DataLoader(train_dataset, 
                                                    batch_size=config["batch_size"], 
                                                    shuffle=False, 
@@ -554,7 +555,7 @@ def cov_train(config, result_path):
                                   is_train_test_full="test", 
                                   use_pair=config["use_pair"], 
                                   balance_samples=False)
-        collate_fn_test = my_collate_fn1 if config["use_aug"]==True else collate_fn
+        collate_fn_test = my_collate_fn1 if config["use_aug"]==1 else collate_fn
         test_loader = torch.utils.data.DataLoader(test_dataset, 
                                                   batch_size=1, 
                                                   shuffle=False, 
