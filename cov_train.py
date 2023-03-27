@@ -952,7 +952,7 @@ def cov_train(config, result_path):
         
     #     break
 
-    res = evaluate(model_name=config["model_name"], kfold=config["kfold"])
+    res = evaluate(model_name=config["model_name"], kfold=config["kfold"], path=result_path)
 
     return res
 

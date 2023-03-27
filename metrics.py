@@ -31,7 +31,7 @@ def mcc_score(pred_proba, label):
     return mcc
 
 
-def evaluate(model_name, kfold):
+def evaluate(model_name, kfold, result_path):
     
     print("Performance of {}".format(model_name))
 
@@ -43,19 +43,19 @@ def evaluate(model_name, kfold):
 
     for i in range(kfold):
         
-        val_acc_i = np.load("./results/CoV-AbDab/{}/val_acc_{}_best.npy".format(model_name, i))
+        val_acc_i = np.load("{}/val_acc_{}_best.npy".format(result_path, i))
         val_acc_mean.append(val_acc_i)
         
-        val_f1_i = np.load("./results/CoV-AbDab/{}/val_f1_{}_best.npy".format(model_name, i))
+        val_f1_i = np.load("{}/val_f1_{}_best.npy".format(result_path, i))
         val_f1_mean.append(val_f1_i)
         
-        val_auc_i = np.load("./results/CoV-AbDab/{}/val_auc_{}_best.npy".format(model_name, i))
+        val_auc_i = np.load("{}/val_auc_{}_best.npy".format(result_path, i))
         val_auc_mean.append(val_auc_i)
         
-        val_gmean_i = np.load("./results/CoV-AbDab/{}/val_gmean_{}_best.npy".format(model_name, i))
+        val_gmean_i = np.load("{}/val_gmean_{}_best.npy".format(result_path, i))
         val_gmean_mean.append(val_gmean_i)
         
-        val_mcc_i = np.load("./results/CoV-AbDab/{}/val_mcc_{}_best.npy".format(model_name, i))
+        val_mcc_i = np.load("{}/val_mcc_{}_best.npy".format(result_path, i))
         val_mcc_mean.append(val_mcc_i)
         
     print("model: {}".format(model_name))

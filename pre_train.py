@@ -116,13 +116,14 @@ def prepare_pesi(config):
     config["model"] = SetTransformer(dim_input=32, 
                                      num_outputs=32, 
                                      dim_output=32, 
-                                     dim_hidden=128, 
+                                     dim_hidden=64, 
                                      num_inds=6, 
                                      num_heads=4, 
                                      ln=True, 
                                      dropout=0.5, 
                                      use_coattn=True, 
-                                     share=False).cuda()
+                                     share=False, 
+                                     use_BSS=False).cuda()
     
     config["epochs"] = 500
     config["lr"] = 6e-5
@@ -469,7 +470,7 @@ if __name__=='__main__':
         "seq_clip_mode": 1,                     # how to choose epitope: 0 - random AA sequence as epitope; 1 - k-nearest AA as epitope
         "neg_sample_mode": 0,                   # how to generate negative sample: 0 - random sample with dissimilarity rate 90% 1 - random sequence;
         "data_type": "seq1_neg0", 
-        "data_path": "../codes/data/data_list.pkl",    # data path for general antibody-antigen dataset
+        "data_path": "../Transformer4Ab/data/data_list.pkl",    # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
         "use_cache": True,                      # whether using cached pair data
@@ -491,9 +492,9 @@ if __name__=='__main__':
     }
 
     if config["use_pair"]==False:
-        config["folds_path"] = "../codes/data/processed_data_clip1_neg0.pkl"
+        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
     elif config["use_pair"]==True:
-        config["folds_path"] = "../codes/processed_data_clip1_neg0_usepairTrue.pkl"
+        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_usepairTrue.pkl"
     else:
         config["folds_path"] = None
 
