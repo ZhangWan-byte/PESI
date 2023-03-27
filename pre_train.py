@@ -35,12 +35,12 @@ def load_data(data_path):
         else:
             data1.append(data[i])
             
-    del data
-    data = data1
-    del data1
+    # del data
+    # data = data1
+    # del data1
     # type(data), len(data)
 
-    return data
+    return data1
 
 
 def prepare_lstm(config):
