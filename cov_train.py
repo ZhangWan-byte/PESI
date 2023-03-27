@@ -378,7 +378,7 @@ def prepare_pesi(config):
         config["model"] = SetTransformer(dim_input=32, 
                                          num_outputs=32, 
                                          dim_output=32, 
-                                         dim_hidden=64, 
+                                         dim_hidden=128, 
                                          num_inds=6, 
                                          num_heads=4, 
                                          ln=True, 
@@ -392,8 +392,8 @@ def prepare_pesi(config):
         
     elif config["model_name"]=="pesi_ft":
         if config["use_BSS"]==False:
-            # config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
-            config["model"] = torch.load("./model_best.pth")
+            config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
+            # config["model"] = torch.load("./model_best.pth")
             config["model"].train()
 
             if config["fix_FE"]==True:
@@ -535,6 +535,7 @@ def cov_train(config, result_path):
             config = prepare_pesi(config)
         else:
             print("wrong model name")
+            print(config["model_name"])
             exit()
         
         train_dataset = SeqDataset(data_path=config["data_path"], 
@@ -992,4 +993,6 @@ if __name__=='__main__':
         result = cov_train(config=config, result_path=result_path)
         print("Results dump to: ")
         print("{}/result_{}.pkl".format(result_path, i))
-        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i)), "wb")
+        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i), "wb"))
+        # with open("{}/result_{}.pkl".format(result_path, i), "wb") as f:
+        #     pickle.dump(result, f)
