@@ -378,7 +378,7 @@ def prepare_pesi(config):
         config["model"] = SetTransformer(dim_input=32, 
                                          num_outputs=32, 
                                          dim_output=32, 
-                                         dim_hidden=64, 
+                                         dim_hidden=128, 
                                          num_inds=6, 
                                          num_heads=4, 
                                          ln=True, 
@@ -393,6 +393,7 @@ def prepare_pesi(config):
     elif config["model_name"]=="pesi_ft":
         if config["use_BSS"]==False:
             config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
+            # config["model"] = torch.load("./model_best.pth")
             config["model"].train()
 
             if config["fix_FE"]==True:
@@ -534,6 +535,7 @@ def cov_train(config, result_path):
             config = prepare_pesi(config)
         else:
             print("wrong model name")
+            print(config["model_name"])
             exit()
         
         train_dataset = SeqDataset(data_path=config["data_path"], 
@@ -542,7 +544,7 @@ def cov_train(config, result_path):
                                    is_train_test_full="train", 
                                    use_pair=config["use_pair"], 
                                    balance_samples=False)
-        collate_fn_train = my_collate_fn2 if config["use_aug"]==True else collate_fn
+        collate_fn_train = my_collate_fn2 if config["use_aug"]==1 else collate_fn
         train_loader = torch.utils.data.DataLoader(train_dataset, 
                                                    batch_size=config["batch_size"], 
                                                    shuffle=False, 
@@ -554,7 +556,7 @@ def cov_train(config, result_path):
                                   is_train_test_full="test", 
                                   use_pair=config["use_pair"], 
                                   balance_samples=False)
-        collate_fn_test = my_collate_fn1 if config["use_aug"]==True else collate_fn
+        collate_fn_test = my_collate_fn1 if config["use_aug"]==1 else collate_fn
         test_loader = torch.utils.data.DataLoader(test_dataset, 
                                                   batch_size=1, 
                                                   shuffle=False, 
@@ -952,7 +954,7 @@ def cov_train(config, result_path):
         
     #     break
 
-    res = evaluate(model_name=config["model_name"], kfold=config["kfold"])
+    res = evaluate(model_name=config["model_name"], kfold=config["kfold"], result_path=result_path)
 
     return res
 
@@ -990,5 +992,7 @@ if __name__=='__main__':
         print("Run {} times of {}fold".format(config["ntimes"], config["kfold"]))
         result = cov_train(config=config, result_path=result_path)
         print("Results dump to: ")
-        print("{}/result_{}.pkl".format(result_path, i, i))
-        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i, i)), "wb")
+        print("{}/result_{}.pkl".format(result_path, i))
+        pickle.dump(result, open("{}/result_{}.pkl".format(result_path, i), "wb"))
+        # with open("{}/result_{}.pkl".format(result_path, i), "wb") as f:
+        #     pickle.dump(result, f)
