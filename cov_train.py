@@ -446,7 +446,7 @@ def prepare_pesi(config):
                                             use_coattn=False, 
                                             share=False, 
                                             use_BSS=True).cuda()
-        
+                                            
             # load pre-trained weights
             # pt_model = torch.load("./results/SAbDab/full/seq1_neg0/SetCoAttnTransformer/model_best.pth")
             pt_model = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
@@ -905,6 +905,8 @@ def cov_train(config, result_path):
                         pred = config["model"](para, epi)
                     elif config["use_BSS"]==True:
                         pred, BSS = config["model"](para, epi)
+                    else:
+                        pass
                     
                     val_loss = criterion(pred.view(-1), label.view(-1).cuda())
                     
