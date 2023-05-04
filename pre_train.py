@@ -477,12 +477,15 @@ if __name__=='__main__':
         
 
         # pre-training params
+        "use_CLIP": True,                       # pre-training mode: CLIP
+        "use_pair": False,                      # pre-training mode: pairwise
+        "num_neg": 4,                           # number of negative samples per positive pair if use_pair==True
+
+        # regularisation
         "use_L2": False,                        # whether using L2 regularisation for pre-training
-        "use_pair": False,                      # whether using pairwise pre-training or not
-        "num_neg": 4,                           # number of negative samples per positive pair
-        # "use_reg": 0,                           # regularisation type: 0 - L2; 1 - L1
         "use_BSS": False,                       # Batch Spectral Shrinkage regularisation
 
+        # learning params
         "batch_size": 16,                       # batch size
         "epi_len": 72,                          # max length of epitope
 
