@@ -115,11 +115,13 @@ class SetTransformer(nn.Module):
                  dropout=0.1, 
                  use_coattn=False, 
                  share=False, 
-                 use_BSS=False):
+                 use_BSS=False, 
+                 use_CLIP=False):
         super(SetTransformer, self).__init__()
 
         self.use_coattn = use_coattn
         self.use_BSS = use_BSS
+        self.use_CLIP = use_CLIP
         
         self.embedding = nn.Embedding(len(vocab), dim_input)
         
@@ -157,6 +159,9 @@ class SetTransformer(nn.Module):
 
         if self.use_coattn==True:
             self.co_attn = CoAttention(embed_size=dim_hidden, output_size=dim_hidden)
+
+        if self.use_CLIP==True:
+            self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
 
         self.output_layer = nn.Sequential(nn.Linear(dim_hidden, dim_hidden//2), nn.LeakyReLU(), nn.Dropout(dropout), \
                                           nn.Linear(dim_hidden//2, 1), nn.Sigmoid())
@@ -219,13 +224,24 @@ class SetTransformer(nn.Module):
             BSS += torch.pow(s2[ll2-1], 2)
 
         # output
-        x = para * epi
-        x = self.output_layer(x)
+        if self.use_CLIP:
+            para = para / para.norm(dim=1, keepdim=True)
+            epi = epi / epi.norm(dim=1, keepdim=True)
 
-        if self.use_BSS:
-            return x, BSS
+            # print(self.logit_scale.shape, para.shape, epi.shape)
+
+            logits_per_para = self.logit_scale.exp() * para @ epi.t()
+            logits_per_epi = logits_per_para.t()
+
+            return logits_per_para, logits_per_epi
         else:
-            return x
+            x = para * epi
+            x = self.output_layer(x)
+
+            if self.use_BSS:
+                return x, BSS
+            else:
+                return x
         
 
 

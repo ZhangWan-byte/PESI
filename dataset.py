@@ -371,7 +371,7 @@ class SeqDataset(torch.utils.data.Dataset):
         self.is_train_test_full = is_train_test_full
         self.data = self.data_df.sample(frac=1, random_state=42)
 
-        self.label = torch.Tensor(self.data["Class"])
+        self.label = torch.Tensor(self.data["Class"].values)
         self.data = pd.concat([self.data_df["Paratope"], \
                                self.data_df["Epitope"]], axis=1)
 

@@ -123,7 +123,8 @@ def prepare_pesi(config):
                                      dropout=0.5, 
                                      use_coattn=True, 
                                      share=False, 
-                                     use_BSS=False).cuda()
+                                     use_BSS=False, 
+                                     use_CLIP=config["use_CLIP"]).cuda()
     
     config["epochs"] = 500
     config["lr"] = 6e-5
@@ -302,7 +303,7 @@ def pre_train(config):
             
     #     scheduler.step()
         print("lr: ", optimizer.param_groups[0]['lr'])
-#         print("train loss {:.4f}\n".format(np.mean(loss_buf)))
+        # print("train loss {:.4f}\n".format(np.mean(loss_buf)))
 
 
         # evaluate
@@ -464,6 +465,8 @@ def pre_train(config):
 
         torch.cuda.empty_cache()
 
+        print("Train loss: {}\tVal loss: {}".format(loss_buf[-1], val_loss_buf[-1]))
+
         config["model"].train()
 
 
@@ -512,7 +515,7 @@ if __name__=='__main__':
                                                 # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
-        "use_cache": True,                      # whether using cached pair data
+        "use_cache": False,                      # whether using cached pair data
         
 
         # pre-training params
@@ -532,12 +535,14 @@ if __name__=='__main__':
         "model_name": model_name
     }
 
-    if config["pretrain_mode"]=="CLIP":
-        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_CLIP.pkl"
-    elif config["pretrain_mode"]=="pair":
+    if config["pretrain_mode"]=="pair":
         config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_pair.pkl"
+        config["use_pair"] = True if config["pretrain_mode"]=="pair" else False
     else:
-        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_normal.pkl"
+        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
+        if config["pretrain_mode"]=="CLIP":
+            config["use_CLIP"] = True if config["pretrain_mode"]=="CLIP" else False
+
 
     print(config)
 
