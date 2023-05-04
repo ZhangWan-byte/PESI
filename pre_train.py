@@ -155,8 +155,12 @@ def pre_train(config):
         print("wrong model_name")
         exit()
 
-    if config["use_pair"]==True:
-        config["model_name"] += "_encoder"
+    if config["pretrain_mode"]=="pair":
+        config["model_name"] += "_pair"
+    elif config["pretrain_mode"]=="CLIP":
+        config["model_name"] += "_CLIP"
+    else:
+        print("normal mode for pretraining")
 
     if config["use_L2"]==True:
         config["model_name"] += "_L2"
@@ -166,6 +170,8 @@ def pre_train(config):
     os.makedirs("./results/SAbDab/full/{}/{}/".format(config["data_type"], config["model_name"]), exist_ok=True)
 
     data = load_data(config["data_path"])
+
+    use_pair = True if config["pretrain_mode"]=="pair" else False
 
     train_dataset = SAbDabDataset(data=data, 
                                     epi_seq_length=config["epi_len"], 
@@ -178,13 +184,14 @@ def pre_train(config):
                                     K=48, 
                                     data_augment=False, 
                                     use_cache=config["use_cache"], 
-                                    use_pair=config["use_pair"], 
+                                    use_pair=use_pair, 
                                     num_neg=config["num_neg"])
     test_dataset = SeqDataset(data_path=config["test_data_path"], 
                                 is_train_test_full="full", 
-                                use_pair=config["use_pair"])
+                                use_pair=use_pair, 
+                                pretrain_mode=config["pretrain_mode"])
 
-    func = pair_collate_fn if config["use_pair"] else collate_fn
+    func = pair_collate_fn if use_pair else collate_fn
     train_loader = torch.utils.data.DataLoader(train_dataset, 
                                                 batch_size=config["batch_size"], 
                                                 shuffle=False, 
@@ -197,7 +204,7 @@ def pre_train(config):
 
     print("model parameters: ", sum(p.numel() for p in config["model"].parameters() if p.requires_grad))
 
-    criterion = nn.BCELoss() if config["use_pair"]==False else None
+    criterion = nn.BCELoss() if use_pair==False else None
     optimizer = optim.Adam(config["model"].parameters(), lr=config["lr"])
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-6, last_epoch=-1)
 
@@ -220,13 +227,13 @@ def pre_train(config):
         print("Epoch {}".format(epoch))
 
         loss_tmp = []
-        if config["use_pair"]==False:
+        
+        if config["pretrain_mode"]=="normal":
             for i, (para, epi, label) in enumerate(tqdm(train_loader)):
                 optimizer.zero_grad()
 
-                if config["use_pair"]==False:
-                    pred = config["model"](para, epi)
-                    loss = criterion(pred.view(-1), label.view(-1).cuda())
+                pred = config["model"](para, epi)
+                loss = criterion(pred.view(-1), label.view(-1).cuda())
 
                 if config["use_L2"] == True:
                     param_l2_loss = 0
@@ -245,8 +252,11 @@ def pre_train(config):
                 loss_tmp.append(loss.item())
                 
             loss_buf.append(np.mean(loss_tmp))
+
+        elif config["pretrain_mode"]=="CLIP":
+            pass
                 
-        elif config["use_pair"]==True:
+        elif config["pretrain_mode"]=="pair":
             for i, (para, epi_pos, epi_neg) in enumerate(tqdm(train_loader)):
                 optimizer.zero_grad()
 
@@ -293,7 +303,7 @@ def pre_train(config):
 
 
         # evaluate
-        if config["use_pair"]==False:
+        if config["pretrain_mode"]=="normal":
         
             with torch.no_grad():
 
@@ -374,7 +384,10 @@ def pre_train(config):
                     np.save("./results/SAbDab/full/{}/{}/val_gmean_bestmcc.npy".format(config["data_type"], config["model_name"]), gmean)
                     np.save("./results/SAbDab/full/{}/{}/val_mcc_bestmcc.npy".format(config["data_type"], config["model_name"]), mcc)
 
-        elif config["use_pair"]==True:
+        elif config["pretrain_mode"]=="CLIP":
+            pass
+
+        elif config["pretrain_mode"]=="pair":
 #             if np.mean(loss_tmp)<best_train_loss:
 #                 best_train_loss = np.mean(loss_tmp)
 #                 torch.save(model, "./results/SAbDab/full/{}/{}/model_best.pth".format(data_type, model_name))
@@ -433,7 +446,7 @@ def pre_train(config):
     torch.save(config["model"], "./results/SAbDab/full/{}/{}/model.pth".format(config["data_type"], config["model_name"]))
     np.save("./results/SAbDab/full/{}/{}/loss_buf.npy".format(config["data_type"], config["model_name"]), np.array(loss_buf))
     np.save("./results/SAbDab/full/{}/{}/val_loss_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_loss_buf))
-    if config["use_pair"]==False:
+    if config["pretrain_mode"]=="normal":
         
         np.save("./results/SAbDab/full/{}/{}/val_acc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_acc_buf))
         np.save("./results/SAbDab/full/{}/{}/val_f1_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_f1_buf))
@@ -470,16 +483,16 @@ if __name__=='__main__':
         "seq_clip_mode": 1,                     # how to choose epitope: 0 - random AA sequence as epitope; 1 - k-nearest AA as epitope
         "neg_sample_mode": 0,                   # how to generate negative sample: 0 - random sample with dissimilarity rate 90% 1 - random sequence;
         "data_type": "seq1_neg0", 
-        "data_path": "../Transformer4Ab/data/data_list.pkl",    # data path for general antibody-antigen dataset
+        "data_path": "../Transformer4Ab/data/data_list.pkl",    
+                                                # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
         "use_cache": True,                      # whether using cached pair data
         
 
         # pre-training params
-        "use_CLIP": True,                       # pre-training mode: CLIP
-        "use_pair": False,                      # pre-training mode: pairwise
-        "num_neg": 4,                           # number of negative samples per positive pair if use_pair==True
+        "pretrain_mode": "CLIP",                # pre-training mode: CLIP/pair/normal
+        "num_neg": 4,                           # number of negative samples per positive pair if pretrain_mode=="pair"
 
         # regularisation
         "use_L2": False,                        # whether using L2 regularisation for pre-training
@@ -494,12 +507,12 @@ if __name__=='__main__':
         "model_name": model_name
     }
 
-    if config["use_pair"]==False:
-        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
-    elif config["use_pair"]==True:
-        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_usepairTrue.pkl"
+    if config["pretrain_mode"]=="CLIP":
+        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_CLIP.pkl"
+    elif config["pretrain_mode"]=="pair":
+        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_pair.pkl"
     else:
-        config["folds_path"] = None
+        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_normal.pkl"
 
     print(config)
 

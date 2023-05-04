@@ -256,8 +256,13 @@ class SAbDabDataset(torch.utils.data.Dataset):
             augment_ratio=0.5, \
             use_cache=False, \
             use_pair=False, \
-            num_neg=1
+            num_neg=1, \
+            pretrain_mode='normal'
         ):
+
+        self.pretrain_mode = pretrain_mode
+        use_pair = True if self.pretrain_mode=='pair' else False
+
         # load folds if existing else preprocessing
         if folds_path==None:
             print("folds_path none, preprocessing...")
@@ -277,7 +282,7 @@ class SAbDabDataset(torch.utils.data.Dataset):
             random.shuffle(self.pair_data)
 
         self.is_train_test_full = is_train_test_full
-        self.use_pair = use_pair
+        self.use_pair = True if self.pretrain_mode=='pair' else False
 
         if use_pair==False:
             self.label = torch.Tensor([pair[-1] for pair in self.pair_data])
@@ -315,26 +320,32 @@ class SAbDabDataset(torch.utils.data.Dataset):
                 self.train_label = torch.hstack([self.train_label, torch.Tensor([0]*int(augment_ratio*len(self.train_data)))])
             
     def __len__(self):
-        if self.use_pair==False:
+        if self.pretrain_mode=='normal' or self.pretrain_mode=='CLIP':
             if self.is_train_test_full=="train":
                 return len(self.train_data)
             elif self.is_train_test_full=="test":
                 return len(self.test_data)
             else:
                 return len(self.data)
-        else:
+        elif self.pretrain_mode=='pair':
             return len(self.pair_data)
+        else:
+            print("wrong pretrain_mode in sabdabdataset")
+            exit()
     
     def __getitem__(self, idx):
-        if self.use_pair==False:
+        if self.pretrain_mode=='normal':
             if self.is_train_test_full=="train":
                 return self.train_data[idx][0], self.train_data[idx][1], self.train_label[idx]
             elif self.is_train_test_full=="test":
                 return self.test_data[idx][0], self.test_data[idx][1], self.test_label[idx]
             else:
                 return self.data[idx][0], self.data[idx][1], self.label[idx]
-        else:
+        elif self.pretrain_mode=='pair':
             return self.pair_data[idx][0], self.pair_data[idx][1], self.pair_data[idx][2]
+        else:
+            print("wrong pretrain_mode in sabdabdataset")
+            exit()
         
         
 # CoV-AbDab
@@ -346,14 +357,17 @@ class SeqDataset(torch.utils.data.Dataset):
                  is_train_test_full="train", 
                  use_pair=False, 
                  balance_samples=False, 
-                 balance_ratio=1):
+                 balance_ratio=1, 
+                 pretrain_mode='normal'):
         
-        self.use_pair = use_pair
+        self.pretrain_mode = pretrain_mode
         self.balance_samples = balance_samples
 
         self.data_df = pd.read_csv(data_path)
         if self.balance_samples:
             self.balance(ratio=balance_ratio)
+        if self.pretrain_mode == 'CLIP':
+            self.data_df = self.data_df[self.data_df["Class"]==1]
         self.is_train_test_full = is_train_test_full
         self.data = self.data_df.sample(frac=1, random_state=42)
 
@@ -377,7 +391,7 @@ class SeqDataset(torch.utils.data.Dataset):
             self.train_data = pd.concat(self.data_folds)
             self.train_label = torch.hstack(self.label_folds)
         
-        if self.use_pair==True:
+        if self.pretrain_mode=='pair':
             self.pair_data = []
 
             for i in range(len(self.data)):
@@ -425,26 +439,36 @@ class SeqDataset(torch.utils.data.Dataset):
 
 
     def __len__(self):
-        if self.use_pair==False:
+        if self.pretrain_mode=='normal' or self.pretrain_mode=='CLIP':
             if self.is_train_test_full=="train":
                 return self.train_data.shape[0]
             elif self.is_train_test_full=="test":
                 return self.test_data.shape[0]
             else:
                 return self.data.shape[0]
-        else:
+        # elif self.pretrain_mode=='CLIP':
+        #     pass
+        elif self.pretrain_mode=='pair':
             return len(self.pair_data)
+        else:
+            print("wrong pretrain_mode in seqdataset")
+            exit()
     
     def __getitem__(self, idx):
-        if self.use_pair==False:
+        if self.pretrain_mode=='normal' or self.pretrain_mode=='CLIP':
             if self.is_train_test_full=="train":
                 return self.train_data.iloc[idx][0], self.train_data.iloc[idx][1], self.train_label[idx]
             elif self.is_train_test_full=="test":
                 return self.test_data.iloc[idx][0], self.test_data.iloc[idx][1], self.test_label[idx]
             else:
                 return self.data.iloc[idx][0], self.data.iloc[idx][1], self.label[idx]
-        else:
+        # elif self.pretrain_mode=='CLIP':
+        #     pass
+        elif self.pretrain_mode=='pair':
             return self.pair_data[idx][0], self.pair_data[idx][1], self.pair_data[idx][2]
+        else:
+            print("wrong pretrain_mode in seqdataset")
+            exit()
 
 if __name__=="__main__":
     # SAbDabDataset
