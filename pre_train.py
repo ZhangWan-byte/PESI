@@ -228,35 +228,7 @@ def pre_train(config):
 
         loss_tmp = []
         
-        if config["pretrain_mode"]=="normal":
-            for i, (para, epi, label) in enumerate(tqdm(train_loader)):
-                optimizer.zero_grad()
-
-                pred = config["model"](para, epi)
-                loss = criterion(pred.view(-1), label.view(-1).cuda())
-
-                if config["use_L2"] == True:
-                    param_l2_loss = 0
-                    for name, param in config["model"].named_parameters():
-                        if 'bias' not in name:
-                            param_l2_loss += torch.norm(param, p=2)
-                    param_l2_loss = config["l2_coef"] * param_l2_loss
-                    loss += param_l2_loss
-
-                loss.backward()
-
-                torch.nn.utils.clip_grad_norm_(config["model"].parameters(), config["clip_norm"])
-
-                optimizer.step()
-
-                loss_tmp.append(loss.item())
-                
-            loss_buf.append(np.mean(loss_tmp))
-
-        elif config["pretrain_mode"]=="CLIP":
-            pass
-                
-        elif config["pretrain_mode"]=="pair":
+        if config["pretrain_mode"]=="pair":
             for i, (para, epi_pos, epi_neg) in enumerate(tqdm(train_loader)):
                 optimizer.zero_grad()
 
@@ -293,9 +265,40 @@ def pre_train(config):
                 loss_tmp.append(loss.item())
 
             loss_buf.append(np.mean(loss_tmp))
+        
         else:
-            print("wrong")
-            exit()
+            for i, (para, epi, label) in enumerate(tqdm(train_loader)):
+                optimizer.zero_grad()
+
+                if config["pretrain_mode"]=="normal":
+                    pred = config["model"](para, epi)
+                    loss = criterion(pred.view(-1), label.view(-1).cuda())
+                
+                if config["pretrain_mode"]=="CLIP":
+                    logits_per_para, logits_per_epi = config["model"](para, epi)
+                    labels = torch.arange(logits_per_para.shape[0], device=torch.device("cuda"), dtype=torch.long)
+                    loss = (
+                        F.cross_entropy(logits_per_para, labels) +
+                        F.cross_entropy(logits_per_epi, labels)
+                    ) / 2
+
+                if config["use_L2"] == True:
+                    param_l2_loss = 0
+                    for name, param in config["model"].named_parameters():
+                        if 'bias' not in name:
+                            param_l2_loss += torch.norm(param, p=2)
+                    param_l2_loss = config["l2_coef"] * param_l2_loss
+                    loss += param_l2_loss
+
+                loss.backward()
+
+                torch.nn.utils.clip_grad_norm_(config["model"].parameters(), config["clip_norm"])
+
+                optimizer.step()
+
+                loss_tmp.append(loss.item())
+                
+            loss_buf.append(np.mean(loss_tmp))
             
     #     scheduler.step()
         print("lr: ", optimizer.param_groups[0]['lr'])
@@ -385,7 +388,29 @@ def pre_train(config):
                     np.save("./results/SAbDab/full/{}/{}/val_mcc_bestmcc.npy".format(config["data_type"], config["model_name"]), mcc)
 
         elif config["pretrain_mode"]=="CLIP":
-            pass
+            with torch.no_grad():
+
+                config["model"].eval()
+
+                preds = []
+                labels = []
+                val_loss_tmp = []
+                for i, (para, epi, label) in enumerate(tqdm(test_loader)):
+
+                    logits_per_para, logits_per_epi = config["model"](para, epi)
+                    labels = torch.arange(logits_per_para.shape[0], device=torch.device("cuda"), dtype=torch.long)
+                    val_loss = (
+                        F.cross_entropy(logits_per_para, labels) +
+                        F.cross_entropy(logits_per_epi, labels)
+                    ) / 2
+
+                    val_loss_tmp.append(val_loss.item())
+                
+                val_loss_buf.append(np.mean(val_loss_tmp))
+                # save best loss
+                if np.mean(val_loss_tmp)<best_val_loss:
+                    best_val_loss = np.mean(val_loss_tmp)
+                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_best.pth".format(config["data_type"], config["model_name"]))
 
         elif config["pretrain_mode"]=="pair":
 #             if np.mean(loss_tmp)<best_train_loss:
