@@ -527,7 +527,7 @@ if __name__=='__main__':
         "use_BSS": False,                       # Batch Spectral Shrinkage regularisation
 
         # learning params
-        "batch_size": 16,                       # batch size
+        "batch_size": 128,                       # batch size
         "epi_len": 72,                          # max length of epitope
 
 
