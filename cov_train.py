@@ -497,7 +497,7 @@ def prepare_pesi(config):
 
 def cov_train(config, result_path):
 
-    if config["use_fine_tune"]==True:
+    if config["use_fine_tune"]=='normal':
         if "ft" not in config["model_name"]:
             config["model_name"] += "_ft"
 
