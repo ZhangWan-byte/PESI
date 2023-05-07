@@ -74,6 +74,7 @@ def prepare_lstm(config):
 
     else:
         print("Error Model Name")
+        print(config["model_name"])
         exit()
 
     return config
@@ -331,6 +332,7 @@ def prepare_deepaai(config):
     pass
 
 def prepare_pesi(config):
+    print(config["model_name"])
     # if config["use_fine_tune"]==True:
     #     config["model_name"] += "_ft"
 
@@ -434,7 +436,7 @@ def prepare_pesi(config):
             # l2_coef = 5e-4
 
         elif config["use_BSS"]==True:
-            print(config["model_name"], config["use_BSS"])
+            # print(config["model_name"], config["use_BSS"])
             config["model"] = SetTransformer(dim_input=32, 
                                             num_outputs=32, 
                                             dim_output=32, 
@@ -531,7 +533,7 @@ def cov_train(config, result_path):
             config["model_name"] += "_ft"
         
         if config["use_fine_tune"]=='CLIP' and "CLIP" not in config["model_name"]:
-            config["model_name"] += "CLIP"
+            config["model_name"] += "_CLIP"
 
         if config["use_pair"]==True:
             config["model_name"] += "_pairPreTrain"
@@ -550,21 +552,21 @@ def cov_train(config, result_path):
         print("fold {} as val set".format(k_iter))
 
         # model name
-        if config["model_name"][:-3]=="lstm" or config["model_name"]=="lstm":
+        if config["model_name"][:4]=="lstm" or config["model_name"]=="lstm":
             config = prepare_lstm(config)
-        elif config["model_name"][:-3]=="textcnn" or config["model_name"]=="textcnn":
+        elif config["model_name"][:7]=="textcnn" or config["model_name"]=="textcnn":
             config = prepare_textcnn(config)
-        elif config["model_name"][:-3]=="masonscnn" or config["model_name"]=="masonscnn":
+        elif config["model_name"][:9]=="masonscnn" or config["model_name"]=="masonscnn":
             config = prepare_masonscnn(config)
-        elif config["model_name"][:-3]=="ag_fast_parapred" or config["model_name"]=="ag_fast_parapred":
+        elif config["model_name"][:16]=="ag_fast_parapred" or config["model_name"]=="ag_fast_parapred":
             config = prepare_ag_fast_parapred(config)
-        elif config["model_name"][:-3]=="pipr" or config["model_name"]=="pipr":
+        elif config["model_name"][:4]=="pipr" or config["model_name"]=="pipr":
             config = prepare_pipr(config)
-        elif config["model_name"][:-3]=="resppi" or config["model_name"]=="resppi":
+        elif config["model_name"][:6]=="resppi" or config["model_name"]=="resppi":
             config = prepare_resppi(config)
-        elif config["model_name"][:-3]=="deepaai" or config["model_name"]=="deepaai":
+        elif config["model_name"][:7]=="deepaai" or config["model_name"]=="deepaai":
             config = prepare_deepaai(config)
-        elif config["model_name"][:-3]=="pesi" or config["model_name"]=="pesi":
+        elif config["model_name"][:4]=="pesi" or config["model_name"]=="pesi":
             config = prepare_pesi(config)
         else:
             print("wrong model name")
@@ -862,7 +864,17 @@ def cov_train(config, result_path):
         print("model parameters: ", sum(p.numel() for p in config["model"].parameters() if p.requires_grad))
         
         criterion = nn.BCELoss()
-        optimizer = optim.Adam(config["model"].parameters(), lr=config["lr"])#, weight_decay=wd)
+        if config["diff_lr"]==False:
+            optimizer = optim.Adam(config["model"].parameters(), lr=config["lr"])#, weight_decay=wd)
+        else:
+            my_list = ["embedding", "para_enc", "para_dec", "epi_enc", "epi_dec", "co_attn"]
+            base_params = list(filter(lambda kv: kv[0].split(".")[0] in my_list, config["model"].named_parameters()))
+            classifier_params = list(filter(lambda kv: kv[0].split(".")[0] not in my_list, config["model"].named_parameters()))
+            optimizer = optim.Adam([
+                {'params': [temp[1] for temp in base_params], 'lr': 1e-6}, 
+                {'params': [temp[1] for temp in classifier_params]}
+            ], lr=config["lr"])
+        
         # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-6, last_epoch=-1)
 
         loss_buf = []
@@ -1025,7 +1037,7 @@ if __name__=='__main__':
     print(config)
 
     # training
-    current_time = time.strftime('%m-%d-%H-%M', time.localtime())
+    current_time = time.strftime('%m-%d-%H-%M-%S', time.localtime())
     result_path = "./results/CoV-AbDab/{}_{}".format(config["model_name"], current_time)
     os.makedirs(result_path)
 

@@ -7,8 +7,8 @@
     "use_pair": 0, 
     
     "use_reg": 0, 
-    "use_BSS": 1, 
-    "use_aug": 1, 
+    "use_BSS": 0, 
+    "use_aug": 0, 
     
     "ntimes": 1, 
     "kfold": 10, 
@@ -16,5 +16,6 @@
     
     "model_name": "pesi", 
     
-    "clip_norm": 0.5
+    "clip_norm": 0.5, 
+    "diff_lr": 1
 }
