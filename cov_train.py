@@ -472,7 +472,36 @@ def prepare_pesi(config):
         else:
             print("wrong use_BSS!")
             quit()
+
+    elif config["model_name"]=="pesi_CLIP":
+        config["model"] = SetTransformer(dim_input=32, 
+                                     num_outputs=32, 
+                                     dim_output=32, 
+                                     dim_hidden=64, 
+                                     num_inds=6, 
+                                     num_heads=4, 
+                                     ln=True, 
+                                     dropout=0.5, 
+                                     use_coattn=True, 
+                                     share=False, 
+                                     use_BSS=False, 
+                                     use_CLIP=False).cuda()
         
+        pretrained_model = torch.load("./results/SAbDab/full/seq1_neg0/pesi_CLIP/model_best.pth")
+        
+        config["model"].embedding.load_state_dict(pretrained_model.embedding.state_dict())
+        config["model"].para_enc.load_state_dict(pretrained_model.para_enc.state_dict())
+        config["model"].para_dec.load_state_dict(pretrained_model.para_dec.state_dict())
+        config["model"].epi_enc.load_state_dict(pretrained_model.epi_enc.state_dict())
+        config["model"].epi_dec.load_state_dict(pretrained_model.epi_dec.state_dict())
+        config["model"].co_attn.load_state_dict(pretrained_model.co_attn.state_dict())
+        config["model"].output_layer.load_state_dict(pretrained_model.output_layer.state_dict())
+        config["model"].train()
+
+        # params
+        config["epochs"] = 1000
+        config["lr"] = 6e-5
+        config["l2_coef"] = 5e-4  
         
     elif config["model_name"]=="SetCoAttnTransformer_ft_pairPreTrain":
         
@@ -497,9 +526,12 @@ def prepare_pesi(config):
 
 def cov_train(config, result_path):
 
-    if config["use_fine_tune"]=='normal':
-        if "ft" not in config["model_name"]:
+    if config["use_fine_tune"]!='None':
+        if config["use_fine_tune"]=='normal' and "ft" not in config["model_name"]:
             config["model_name"] += "_ft"
+        
+        if config["use_fine_tune"]=='CLIP' and "CLIP" not in config["model_name"]:
+            config["model_name"] += "CLIP"
 
         if config["use_pair"]==True:
             config["model_name"] += "_pairPreTrain"
