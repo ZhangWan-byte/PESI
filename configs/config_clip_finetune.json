@@ -10,7 +10,7 @@
     "use_BSS": 0, 
     "use_aug": 0, 
     
-    "ntimes": 1, 
+    "ntimes": 3, 
     "kfold": 10, 
     "batch_size": 16, 
     
