@@ -166,7 +166,7 @@ class SetTransformer(nn.Module):
             self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
 
         if self.use_cosCLS==True:
-            self.W = nn.Linear(embed_size, 2)
+            self.clf = distLinear(indim=dim_hidden, outdim=2)
 
         self.output_layer = nn.Sequential(nn.Linear(dim_hidden, dim_hidden//2), nn.LeakyReLU(), nn.Dropout(dropout), \
                                           nn.Linear(dim_hidden//2, 1), nn.Sigmoid())
@@ -242,9 +242,9 @@ class SetTransformer(nn.Module):
 
         elif self.use_cosCLS:
             x = para * epi
-            x_proj = self.W(x)
+            x = self.clf(x)
             
-            return x, x_proj
+            return x
 
         else:
             x = para * epi

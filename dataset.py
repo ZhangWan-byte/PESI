@@ -365,7 +365,7 @@ class SeqDataset(torch.utils.data.Dataset):
 
         self.data_df = pd.read_csv(data_path)
         if self.balance_samples:
-            self.balance(ratio=balance_ratio)
+            self.balance(ratio=balance_ratio, num_index=self.data_df.shape[0])
         if self.pretrain_mode == 'CLIP':
             self.data_df = self.data_df[self.data_df["Class"]==1]
         self.is_train_test_full = is_train_test_full
@@ -407,7 +407,7 @@ class SeqDataset(torch.utils.data.Dataset):
                     
                     self.pair_data.append((paratope, antigen_pos, antigen_neg))
 
-    def balance(self, ratio):
+    def balance(self, ratio, num_index):
         """
         ratio: ratio of neg:pos
         """
@@ -430,7 +430,7 @@ class SeqDataset(torch.utils.data.Dataset):
                     
                 append_samples.append((paratope, antigen_neg))
 
-        self.df_append = pd.DataFrame({'Index': [311+i for i in range(len(append_samples))], 
+        self.df_append = pd.DataFrame({'Index': [num_index+i for i in range(len(append_samples))], 
                                        'AB_name': ['neg samples']*len(append_samples), 
                                        'Class': [0]*len(append_samples), 
                                        'Paratope': [i[0] for i in append_samples],
