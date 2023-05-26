@@ -116,12 +116,14 @@ class SetTransformer(nn.Module):
                  use_coattn=False, 
                  share=False, 
                  use_BSS=False, 
-                 use_CLIP=False):
+                 use_CLIP=False, 
+                 use_cosCLS=False):
         super(SetTransformer, self).__init__()
 
         self.use_coattn = use_coattn
         self.use_BSS = use_BSS
         self.use_CLIP = use_CLIP
+        self.use_cosCLS = use_cosCLS
         
         self.embedding = nn.Embedding(len(vocab), dim_input)
         
@@ -162,6 +164,9 @@ class SetTransformer(nn.Module):
 
         if self.use_CLIP==True:
             self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+
+        if self.use_cosCLS==True:
+            self.W = nn.Linear(embed_size, 2)
 
         self.output_layer = nn.Sequential(nn.Linear(dim_hidden, dim_hidden//2), nn.LeakyReLU(), nn.Dropout(dropout), \
                                           nn.Linear(dim_hidden//2, 1), nn.Sigmoid())
@@ -234,6 +239,13 @@ class SetTransformer(nn.Module):
             logits_per_epi = logits_per_para.t()
 
             return logits_per_para, logits_per_epi
+
+        elif self.use_cosCLS:
+            x = para * epi
+            x_proj = self.W(x)
+            
+            return x, x_proj
+
         else:
             x = para * epi
             x = self.output_layer(x)
