@@ -126,7 +126,7 @@ def prepare_pesi(config):
                                      use_BSS=False, 
                                      use_CLIP=config["use_CLIP"]).cuda()
     
-    config["epochs"] = 500
+    config["epochs"] = 2000
     config["lr"] = 6e-5
     config["l2_coef"] = 1e-3
 
@@ -527,7 +527,7 @@ if __name__=='__main__':
         "use_BSS": False,                       # Batch Spectral Shrinkage regularisation
 
         # learning params
-        "batch_size": 128,                       # batch size
+        "batch_size": 1024,                       # batch size
         "epi_len": 72,                          # max length of epitope
 
 
