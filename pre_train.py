@@ -188,9 +188,10 @@ def pre_train(config):
                                     use_pair=use_pair, 
                                     num_neg=config["num_neg"])
     test_dataset = SeqDataset(data_path=config["test_data_path"], 
-                                is_train_test_full="full", 
-                                use_pair=use_pair, 
-                                pretrain_mode=config["pretrain_mode"])
+                              is_train_test_full="full", 
+                              use_pair=use_pair, 
+                              pretrain_mode=config["pretrain_mode"], 
+                              use_part=config["use_part"])
 
     func = pair_collate_fn if use_pair else collate_fn
     train_loader = torch.utils.data.DataLoader(train_dataset, 

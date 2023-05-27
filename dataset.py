@@ -361,14 +361,16 @@ class SeqDataset(torch.utils.data.Dataset):
                  pretrain_mode='normal', 
                  use_part=False):
         
+        self.is_train_test_full = is_train_test_full
         self.pretrain_mode = pretrain_mode
         self.balance_samples = balance_samples
+        self.use_part = use_part
 
         self.data_df = pd.read_csv(data_path)
 
         # use part of dataset as validation for pre-training
         # rest of data for k-fold
-        if use_part == True:
+        if self.use_part == True:
             self.part = self.data_df.sample(frac=0.1, random_state=42)
             self.data_df = self.data_df.drop(self.part.index)
 
@@ -380,13 +382,14 @@ class SeqDataset(torch.utils.data.Dataset):
         if self.pretrain_mode == 'CLIP':
             self.data_df = self.data_df[self.data_df["Class"]==1]
         
-        self.is_train_test_full = is_train_test_full
+        
         self.data = self.data_df.sample(frac=1, random_state=42)
 
         self.label = torch.Tensor(self.data["Class"].values)
         self.data = pd.concat([self.data_df["Paratope"], \
                                self.data_df["Epitope"]], axis=1)
 
+        # split to train and test, if needed
         if self.is_train_test_full=="train" or self.is_train_test_full=="test":
             self.data_folds = []
             self.label_folds = []
@@ -402,7 +405,8 @@ class SeqDataset(torch.utils.data.Dataset):
             self.test_label = self.label_folds.pop(holdout_fold)
             self.train_data = pd.concat(self.data_folds)
             self.train_label = torch.hstack(self.label_folds)
-        
+
+        # re-organise to pair data, if needed        
         if self.pretrain_mode=='pair':
             self.pair_data = []
 
