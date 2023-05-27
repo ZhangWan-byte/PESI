@@ -522,6 +522,7 @@ if __name__=='__main__':
         # pre-training params
         "pretrain_mode": "CLIP",                # pre-training mode: CLIP/pair/normal
         "num_neg": 4,                           # number of negative samples per positive pair if pretrain_mode=="pair"
+        "use_part": True,                       # whether use part of cov-abdab as validation for model selection
 
         # regularisation
         "use_L2": False,                        # whether using L2 regularisation for pre-training
