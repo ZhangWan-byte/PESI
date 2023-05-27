@@ -520,7 +520,7 @@ if __name__=='__main__':
         
 
         # pre-training params
-        "pretrain_mode": "CLIP",                # pre-training mode: CLIP/pair/normal
+        "pretrain_mode": "normal",                # pre-training mode: CLIP/pair/normal
         "num_neg": 4,                           # number of negative samples per positive pair if pretrain_mode=="pair"
         "use_part": True,                       # whether use part of cov-abdab as validation for model selection
 
@@ -543,7 +543,9 @@ if __name__=='__main__':
     else:
         config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
         if config["pretrain_mode"]=="CLIP":
-            config["use_CLIP"] = True if config["pretrain_mode"]=="CLIP" else False
+            config["use_CLIP"] = True
+        else:
+            config["use_CLIP"] = False
 
 
     print(config)
