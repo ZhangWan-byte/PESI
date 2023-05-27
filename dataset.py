@@ -358,16 +358,28 @@ class SeqDataset(torch.utils.data.Dataset):
                  use_pair=False, 
                  balance_samples=False, 
                  balance_ratio=1, 
-                 pretrain_mode='normal'):
+                 pretrain_mode='normal', 
+                 use_part=False):
         
         self.pretrain_mode = pretrain_mode
         self.balance_samples = balance_samples
 
         self.data_df = pd.read_csv(data_path)
+
+        # use part of dataset as validation for pre-training
+        # rest of data for k-fold
+        if use_part == True:
+            self.part = self.data_df.sample(frac=0.1, random_state=42)
+            self.data_df = self.data_df.drop(self.part.index)
+
+        # balance samples to a certain ratio, e.g., pos:neg=1:1
         if self.balance_samples:
             self.balance(ratio=balance_ratio, num_index=self.data_df.shape[0])
+
+        # CLIP only uses positive pairs
         if self.pretrain_mode == 'CLIP':
             self.data_df = self.data_df[self.data_df["Class"]==1]
+        
         self.is_train_test_full = is_train_test_full
         self.data = self.data_df.sample(frac=1, random_state=42)
 
