@@ -574,7 +574,8 @@ def cov_train(config, result_path):
     # print("make folder ./results/CoV-AbDab/{}/".format(config["model_name"]))
     # os.makedirs("./results/CoV-AbDab/{}/".format(config["model_name"]), exist_ok=True)
 
-    pickle.dump(config, os.path.join(result_path, "config_file"))
+    print(config)
+    pickle.dump(rconfigesult, open(os.path.join(result_path, "config_file"), "wb"))
 
     print("model name: {}\tuse_fine_tune: {}".format(config["model_name"], config["use_fine_tune"]))
 
@@ -809,7 +810,7 @@ if __name__=='__main__':
         if config[k]==0:
             config[k]=False
 
-    print(config)
+    # print(config)
 
     # training
     current_time = time.strftime('%m-%d-%H-%M-%S', time.localtime())
