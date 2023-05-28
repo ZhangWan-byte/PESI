@@ -168,8 +168,9 @@ class SetTransformer(nn.Module):
         if self.use_cosCLS==True:
             self.clf = distLinear(indim=dim_hidden, outdim=2)
 
-        self.output_layer = nn.Sequential(nn.Linear(dim_hidden, dim_hidden//2), nn.LeakyReLU(), nn.Dropout(dropout), \
-                                          nn.Linear(dim_hidden//2, 1), nn.Sigmoid())
+        if not self.use_CLIP and not self.use_cosCLS:
+            self.output_layer = nn.Sequential(nn.Linear(dim_hidden, dim_hidden//2), nn.LeakyReLU(), nn.Dropout(dropout), \
+                                              nn.Linear(dim_hidden//2, 1), nn.Sigmoid())
 
 
     def forward(self, para, epi):

@@ -505,6 +505,36 @@ def prepare_pesi(config):
         config["lr"] = 6e-5
         config["l2_coef"] = 5e-4  
         
+    elif config["model_name"]=="pesi_CosCLF":
+        config["model"] = SetTransformer(dim_input=32, 
+                                        num_outputs=32, 
+                                        dim_output=32, 
+                                        dim_hidden=64, 
+                                        num_inds=6, 
+                                        num_heads=4, 
+                                        ln=True, 
+                                        dropout=0.5, 
+                                        use_coattn=True, 
+                                        share=False, 
+                                        use_BSS=False, 
+                                        use_CLIP=False, 
+                                        use_cosCLS=True).cuda()
+        
+        pretrained_model = torch.load("./results/SAbDab/full/seq1_neg0/pesi_CLIP/model_best.pth")
+        
+        config["model"].embedding.load_state_dict(pretrained_model.embedding.state_dict())
+        config["model"].para_enc.load_state_dict(pretrained_model.para_enc.state_dict())
+        config["model"].para_dec.load_state_dict(pretrained_model.para_dec.state_dict())
+        config["model"].epi_enc.load_state_dict(pretrained_model.epi_enc.state_dict())
+        config["model"].epi_dec.load_state_dict(pretrained_model.epi_dec.state_dict())
+        config["model"].co_attn.load_state_dict(pretrained_model.co_attn.state_dict())
+        config["model"].train()
+
+        # params
+        config["epochs"] = 1000
+        config["lr"] = 6e-5
+        config["l2_coef"] = 5e-4  
+
     elif config["model_name"]=="SetCoAttnTransformer_ft_pairPreTrain":
         
         encoder = torch.load("./results/SAbDab/full/seq1_neg0/SetTransformer_encoder/model_best.pth")
@@ -535,11 +565,16 @@ def cov_train(config, result_path):
         if config["use_fine_tune"]=='CLIP' and "CLIP" not in config["model_name"]:
             config["model_name"] += "_CLIP"
 
+        if config["use_fine_tune"]=='CosCLF' and 'CosCLF' not in config["model_name"]:
+            config["model_name"] += "_CosCLF"
+
         if config["use_pair"]==True:
             config["model_name"] += "_pairPreTrain"
 
     # print("make folder ./results/CoV-AbDab/{}/".format(config["model_name"]))
     # os.makedirs("./results/CoV-AbDab/{}/".format(config["model_name"]), exist_ok=True)
+
+    pickle.dump(config, os.path.join(result_path, "config_file"))
 
     print("model name: {}\tuse_fine_tune: {}".format(config["model_name"], config["use_fine_tune"]))
 
@@ -598,268 +633,6 @@ def cov_train(config, result_path):
                                                   batch_size=1, 
                                                   shuffle=False, 
                                                   collate_fn=collate_fn_test)
-
-    #     if model_name=="demo":
-    #         model = BiLSTM_demo(embed_size=32, hidden=64, num_layers=1, dropout=0.5, use_pretrain=False).cuda()
-            
-    #         epochs = 100
-    #         lr = 6e-5
-        
-        
-    #     elif model_name=="InteractTransformer":
-    #         model = InteractTransformer(embed_size=32, 
-    #                                     num_encoder_layers=1, 
-    #                                     nhead=2, 
-    #                                     dropout=0.3, 
-    #                                     use_coattn=False).cuda()
-    #         epochs = 200
-    #         lr = 3e-5
-            
-    #     elif model_name=="InteractTransformer_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/InteractTransformer/model_best.pth")
-    #         model.train()
-            
-    #         if config["fix_FE"]==True:
-    #             for name, param in model.transformer_para.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.transformer_epi.named_parameters():
-    #                 param.requires_grad = False
-
-    #         epochs = 1000
-    #         lr = 1e-4
-    #         l2_coef = 5e-4
-                    
-    #     elif model_name=="InteractCoAttnTransformer":
-    #         model = InteractTransformer(embed_size=32, 
-    #                                     num_encoder_layers=1, 
-    #                                     nhead=2, 
-    #                                     dropout=0.5, 
-    #                                     use_coattn=True).cuda()
-    #         epochs = 200
-    #         lr = 3e-5
-            
-    #     elif model_name=="InteractCoAttnTransformer_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/InteractCoAttnTransformer/model_best.pth")
-    #         model.train()
-        
-    #         if config["fix_FE"]==True:
-    #             for name, param in model.transformer_para.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.transformer_epi.named_parameters():
-    #                 param.requires_grad = False
-            
-    #         epochs = 1500
-    #         lr = 6e-5
-    #         l2_coef = 5e-4
-            
-    #     elif model_name=="InteractCoAttnTransformer_ft_pairPreTrain":
-    #         encoder = torch.load("./results/SAbDab/full/seq1_neg0/InteractTransformer_encoder/model_best.pth")
-    #         encoder.train()
-            
-    #         model = TowerBaseModel(embed_size=32, hidden=128, encoder=encoder, 
-    #                             use_two_towers=False, use_coattn=True, fusion=1).cuda()
-        
-    #         if config["fix_FE"]==True:
-    #             for name, param in model.encoder.named_parameters():
-    #                 param.requires_grad = False
-            
-    #         epochs = 1500
-    #         lr = 6e-5
-    #         l2_coef = 5e-4
-
-    #     elif model_name=="InteractTransformerLSTM":
-    #         model = InteractTransformerLSTM(embed_size=32, 
-    #                                         hidden=64, 
-    #                                         num_encoder_layers=1, 
-    #                                         num_lstm_layers=1, 
-    #                                         nhead=2, 
-    #                                         dropout=0.5, 
-    #                                         use_coattn=True).cuda()
-    #         epochs = 200
-    #         lr = 6e-5
-
-    #     elif model_name=="InteractTransformerLSTM_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/InteractTransformerLSTM/model_best.pth")
-    #         model.train()
-            
-    #         epochs = 200
-    #         lr = 6e-5
-                    
-    
-            
-            
-    #     elif model_name=="SetModel":
-    #         model = SetModel(embed_size=32, 
-    #                         hidden=64, 
-    #                         num_layers=1, 
-    #                         dropout=0.3, 
-    #                         k4kmer=3, 
-    #                         use_pretrain=False, 
-    #                         use_coattn=False, 
-    #                         seq_encoder_type="transformer", 
-    #                         num_heads=2, 
-    #                         num_inds=6, 
-    #                         num_outputs=6, 
-    #                         ln=True).cuda()
-            
-    #         epochs = 200
-    #         lr = 3e-5
-    #         l2_coef = 5e-4
-            
-    #     elif model_name=="SetModel_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/SetModel/model_best.pth")
-    #         model.train()
-            
-    #         if config["fix_FE"]==True:
-    #             for name, param in model.para_enc.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.para_dec.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.epi_enc.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.epi_dec.named_parameters():
-    #                 param.requires_grad = False
-            
-    #         epochs = 200
-    #         lr = 3e-5
-    #         l2_coef = 5e-4
-        
-    #     elif model_name=="SetCoAttnModel":
-    #         model = SetModel(embed_size=32, 
-    #                         hidden=64, 
-    #                         num_layers=1, 
-    #                         dropout=0.3, 
-    #                         k4kmer=3, 
-    #                         use_pretrain=False, 
-    #                         use_coattn=True, 
-    #                         seq_encoder_type="transformer", 
-    #                         num_heads=2, 
-    #                         num_inds=6, 
-    #                         num_outputs=6, 
-    #                         ln=True).cuda()
-    #         epochs = 200
-    #         lr = 3e-5
-        
-    #     elif model_name=="SetCoAttnModel_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/SetCoAttnModel/model_best.pth")
-    #         model.train()
-            
-    #         if config["fix_FE"]==True:
-    #             for name, param in model.para_enc.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.para_dec.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.epi_enc.named_parameters():
-    #                 param.requires_grad = False
-    #             for name, param in model.epi_dec.named_parameters():
-    #                 param.requires_grad = False
-            
-    #         epochs = 200
-    #         lr = 3e-5
-    #         l2_coef = 5e-4
-            
-    #     elif model_name=="SetModel_ablation":
-    #         model = SetModel_ablation(embed_size=32, 
-    #                         hidden=64, 
-    #                         num_layers=2, 
-    #                         dropout=0.5, 
-    #                         k4kmer=7, 
-    #                         use_pretrain=False, 
-    #                         use_coattn=False, 
-    #                         use_kmer_embed=True, 
-    #                         use_seq_encoder=False, 
-    #                         seq_encoder_type="lstm", 
-    #                         num_heads=4, 
-    #                         num_inds=6, 
-    #                         num_outputs=6, 
-    #                         ln=True).cuda()
-    #         epochs = 150
-    #         lr = 6e-5
-            
-    #     elif model_name=="FTransformer":
-    #         model = FTransformer(embed_size=32, 
-    #                             hidden=64, 
-    #                             num_layers=2, 
-    #                             dropout=0.5, 
-    #                             k4kmer=3, 
-    #                             use_pretrain=False, 
-    #                             use_coattn=True, 
-    #                             seq_encoder_type="transformer", 
-    #                             num_heads=2).cuda()
-            
-    #         epochs = 100
-    #         lr = 3e-5
-            
-    #     elif model_name=="EnsembleModel":
-    #         model = EnsembleModel(embed_size=16, 
-    #                     hidden=64, 
-    #                     max_len=100, 
-    #                     num_encoder_layers=1, 
-    #                     num_heads=2, 
-    #                     num_inds=6, 
-    #                     num_outputs=6, 
-    #                     ln=True, 
-    #                     dropout=0.5, 
-    #                     use_coattn=True).cuda()
-            
-    #         epochs = 500
-    #         lr = 1e-5
-            
-    #     elif model_name=="EnsembleModel_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/EnsembleModel/model_best.pth")
-    #         model.train()
-            
-    #         epochs = 500
-    #         lr = 1e-4
-            
-    #     elif model_name=="PESI":
-    # #         model = PESI(embed_size=7, 
-    # #                      hidden=512, 
-    # #                      max_len=100, 
-    # #                      num_heads=2, 
-    # #                      num_inds=6, 
-    # #                      num_outputs=6, 
-    # #                      ln=True, 
-    # #                      dropout=0.5, 
-    # #                      use_coattn=True).cuda()
-    #         model = PESI(embed_size=8, 
-    #                     hidden=64, 
-    #                     max_len=100, 
-    #                     num_heads=2, 
-    #                     num_inds=6, 
-    #                     num_outputs=6, 
-    #                     ln=True, 
-    #                     dropout=0.5, 
-    #                     use_coattn=True).cuda()
-            
-    #         epochs = 200
-    #         lr = 5e-5
-    # #         wd = 3e-4
-    #         l2_coef = 5e-4
-            
-    #     elif model_name=="PESI_ft":
-    #         model = torch.load("./results/SAbDab/full/seq1_neg0/PESI/model_best.pth")
-    #         model.train()
-            
-    #         # freeze frame feature extractor
-    #         for name, param in model.Frame_para.named_parameters():
-    #             param.requires_grad = False
-    #         for name, param in model.Frame_epi.named_parameters():
-    #             param.requires_grad = False
-                
-    #         # freeze frame feature extractor        
-    #         for name, param in model.Set_para.named_parameters():
-    #             param.requires_grad = False
-    #         for name, param in model.Set_epi.named_parameters():
-    #             param.requires_grad = False
-            
-    #         epochs = 500
-    #         lr = 3e-5
-    #         l2_coef = 5e-4
-
-    #     else:
-    #         print("wrong model name!!!")
-    #         break
 
         print("model_name: {}".format(config["model_name"]))
 

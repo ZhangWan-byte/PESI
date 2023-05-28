@@ -8,7 +8,7 @@
     "data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
 
     // fine-tuning params
-    "use_fine_tune": false,                 // load pre-trained weights as initialisation
+    "use_fine_tune": "None",                // None/normal/ft/CLIP/CosCLF
     "fix_FE": false,                        // only load pre-trained feature extractor weights
     "use_pair": false,                      // whether using pairwise pre-training or not
 
@@ -27,5 +27,8 @@
 
     // training params
     "clip_norm": 1                          // gradient clipping norm
+    "diff_lr": 0,                           // use different learning rates for feature extractor and prediction head
+    "use_part": 1                           // whether using part of cov-abdab as pre-training val set for model selection
+
 
 }
