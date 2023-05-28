@@ -518,9 +518,9 @@ def prepare_pesi(config):
                                         share=False, 
                                         use_BSS=False, 
                                         use_CLIP=False, 
-                                        use_cosCLS=True).cuda()
+                                        use_CosCLF=True).cuda()
         
-        pretrained_model = torch.load("./results/SAbDab/full/seq1_neg0/pesi_CLIP/model_best.pth")
+        pretrained_model = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
         
         config["model"].embedding.load_state_dict(pretrained_model.embedding.state_dict())
         config["model"].para_enc.load_state_dict(pretrained_model.para_enc.state_dict())
@@ -575,7 +575,7 @@ def cov_train(config, result_path):
     # os.makedirs("./results/CoV-AbDab/{}/".format(config["model_name"]), exist_ok=True)
 
     print(config)
-    pickle.dump(rconfigesult, open(os.path.join(result_path, "config_file"), "wb"))
+    pickle.dump(config, open(os.path.join(result_path, "config_file"), "wb"))
 
     print("model name: {}\tuse_fine_tune: {}".format(config["model_name"], config["use_fine_tune"]))
 
@@ -676,7 +676,9 @@ def cov_train(config, result_path):
                     pred, BSS = config["model"](para, epi)
                 else:
                     pass
-                    
+                
+                # print(pred.shape, label.shape)
+
                 loss = criterion(pred.view(-1), label.view(-1).cuda())
                 
                 if config["use_reg"]==False:
