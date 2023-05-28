@@ -578,7 +578,8 @@ def cov_train(config, result_path):
                                    holdout_fold=k_iter, 
                                    is_train_test_full="train", 
                                    use_pair=config["use_pair"], 
-                                   balance_samples=False)
+                                   balance_samples=False, 
+                                   use_part=config["use_part"])
         collate_fn_train = my_collate_fn2 if config["use_aug"]==True else collate_fn
         train_loader = torch.utils.data.DataLoader(train_dataset, 
                                                    batch_size=config["batch_size"], 
@@ -590,7 +591,8 @@ def cov_train(config, result_path):
                                   holdout_fold=k_iter, 
                                   is_train_test_full="test", 
                                   use_pair=config["use_pair"], 
-                                  balance_samples=False)
+                                  balance_samples=False, 
+                                  use_part=config["use_part"])
         collate_fn_test = my_collate_fn1 if config["use_aug"]==True else collate_fn
         test_loader = torch.utils.data.DataLoader(test_dataset, 
                                                   batch_size=1, 
