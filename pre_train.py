@@ -124,7 +124,8 @@ def prepare_pesi(config):
                                      use_coattn=True, 
                                      share=False, 
                                      use_BSS=False, 
-                                     use_CLIP=config["use_CLIP"]).cuda()
+                                     use_CLIP=config["use_CLIP"], 
+                                     use_CosCLF=config["use_CosCLF"]).cuda()
     
     config["epochs"] = 2000
     config["lr"] = 6e-5
@@ -534,7 +535,8 @@ if __name__=='__main__':
 
 
         # model_params
-        "model_name": model_name
+        "model_name": model_name,               # type of models
+        "use_CosCLF": True                      # whether to use linear classifier on top of Set.Trans.
     }
 
     if config["pretrain_mode"]=="pair":
