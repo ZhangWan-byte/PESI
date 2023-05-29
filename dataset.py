@@ -359,7 +359,7 @@ class SeqDataset(torch.utils.data.Dataset):
                  balance_samples=False, 
                  balance_ratio=1, 
                  pretrain_mode='normal', 
-                 use_part=False):
+                 use_part='pretrain'):
         
         self.is_train_test_full = is_train_test_full
         self.pretrain_mode = pretrain_mode
@@ -370,9 +370,13 @@ class SeqDataset(torch.utils.data.Dataset):
 
         # use part of dataset as validation for pre-training
         # rest of data for k-fold
-        if self.use_part == True:
-            self.part = self.data_df.sample(frac=0.1, random_state=42)
+        if self.use_part == 'pretrain':
+            self.data_df = self.data_df.sample(frac=0.1, random_state=42)
+        elif self.use_part == 'finetune':
+            self.part = self.part.sample(frac=0.1, random_state=42)
             self.data_df = self.data_df.drop(self.part.index)
+        else:
+            pass
 
         # balance samples to a certain ratio, e.g., pos:neg=1:1
         if self.balance_samples:

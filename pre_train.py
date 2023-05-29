@@ -128,7 +128,7 @@ def prepare_pesi(config):
                                      use_CosCLF=config["use_CosCLF"]).cuda()
     
     config["epochs"] = 2000
-    config["lr"] = 6e-5
+    config["lr"] = 1e-4
     config["l2_coef"] = 1e-3
 
     return config
@@ -210,6 +210,7 @@ def pre_train(config):
     criterion = nn.BCELoss() if use_pair==False else None
     optimizer = optim.Adam(config["model"].parameters(), lr=config["lr"])
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-6, last_epoch=-1)
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=100, eta_min=1e-6, last_epoch=-1)
 
     loss_buf = []
     val_loss_buf = []
@@ -303,7 +304,7 @@ def pre_train(config):
                 
             loss_buf.append(np.mean(loss_tmp))
             
-    #     scheduler.step()
+        scheduler.step()
         print("lr: ", optimizer.param_groups[0]['lr'])
         # print("train loss {:.4f}\n".format(np.mean(loss_buf)))
 
@@ -517,26 +518,26 @@ if __name__=='__main__':
                                                 # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
-        "use_cache": False,                      # whether using cached pair data
+        "use_cache": False,                     # whether using cached pair data
         
 
         # pre-training params
-        "pretrain_mode": "normal",                # pre-training mode: CLIP/pair/normal
+        "pretrain_mode": "normal",              # pre-training mode: CLIP/pair/normal
         "num_neg": 4,                           # number of negative samples per positive pair if pretrain_mode=="pair"
-        "use_part": True,                       # whether use part of cov-abdab as validation for model selection
+        "use_part": "pretrain",                 # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
 
         # regularisation
         "use_L2": False,                        # whether using L2 regularisation for pre-training
         "use_BSS": False,                       # Batch Spectral Shrinkage regularisation
 
         # learning params
-        "batch_size": 1024,                       # batch size
+        "batch_size": 16,                       # batch size
         "epi_len": 72,                          # max length of epitope
 
 
         # model_params
         "model_name": model_name,               # type of models
-        "use_CosCLF": True                      # whether to use linear classifier on top of Set.Trans.
+        "use_CosCLF": False                     # whether to use linear classifier on top of Set.Trans.
     }
 
     if config["pretrain_mode"]=="pair":
