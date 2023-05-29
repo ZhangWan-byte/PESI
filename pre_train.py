@@ -127,7 +127,7 @@ def prepare_pesi(config):
                                      use_CLIP=config["use_CLIP"], 
                                      use_CosCLF=config["use_CosCLF"]).cuda()
     
-    config["epochs"] = 2000
+    config["epochs"] = 100
     config["lr"] = 1e-4
     config["l2_coef"] = 1e-3
 
@@ -210,7 +210,8 @@ def pre_train(config):
     criterion = nn.BCELoss() if use_pair==False else None
     optimizer = optim.Adam(config["model"].parameters(), lr=config["lr"])
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-6, last_epoch=-1)
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=100, eta_min=1e-6, last_epoch=-1)
+    if config["use_lr_schedule"]:
+        scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=100, eta_min=1e-6, last_epoch=-1)
 
     loss_buf = []
     val_loss_buf = []
@@ -304,7 +305,8 @@ def pre_train(config):
                 
             loss_buf.append(np.mean(loss_tmp))
             
-        scheduler.step()
+        if config["use_lr_schedule"]:
+            scheduler.step()
         print("lr: ", optimizer.param_groups[0]['lr'])
         # print("train loss {:.4f}\n".format(np.mean(loss_buf)))
 
@@ -343,7 +345,7 @@ def pre_train(config):
                 val_mcc_buf.append(mcc)
                 val_loss_buf.append(np.mean(val_loss_tmp))
 
-                print("Epoch {}: \n Train Loss\t{:.4f} \n Val Loss\t{:.4f} \n Val Acc\t{:.4f} \n Val F1\t\t{:.4f} \n Val AUC\t{:.4f}".format(epoch, np.mean(loss_buf), np.mean(val_loss_buf), acc, f1, auc))
+                print("Epoch {}: \n Train Loss\t{:.4f} \n Val Loss\t{:.4f} \n Val Acc\t{:.4f} \n Val F1\t\t{:.4f} \n Val AUC\t{:.4f}".format(epoch, np.mean(loss_tmp), np.mean(val_loss_tmp), acc, f1, auc))
 
                 # save best loss
                 if np.mean(val_loss_tmp)<best_val_loss:
@@ -533,7 +535,7 @@ if __name__=='__main__':
         # learning params
         "batch_size": 16,                       # batch size
         "epi_len": 72,                          # max length of epitope
-
+        "use_lr_schedule": False,               # lr scheduler
 
         # model_params
         "model_name": model_name,               # type of models
