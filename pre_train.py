@@ -176,18 +176,18 @@ def pre_train(config):
     use_pair = True if config["pretrain_mode"]=="pair" else False
 
     train_dataset = SAbDabDataset(data=data, 
-                                    epi_seq_length=config["epi_len"], 
-                                    seq_clip_mode=config["seq_clip_mode"], 
-                                    neg_sample_mode=config["neg_sample_mode"], 
-                                    is_train_test_full="full", 
-                                    is_shuffle=True, 
-                                    folds_path=config["folds_path"], 
-                                    save_path=None, 
-                                    K=48, 
-                                    data_augment=False, 
-                                    use_cache=config["use_cache"], 
-                                    use_pair=use_pair, 
-                                    num_neg=config["num_neg"])
+                                  epi_seq_length=config["epi_len"], 
+                                  seq_clip_mode=config["seq_clip_mode"], 
+                                  neg_sample_mode=config["neg_sample_mode"], 
+                                  is_train_test_full="full", 
+                                  is_shuffle=True, 
+                                  folds_path=config["folds_path"], 
+                                  save_path=None, 
+                                  K=48, 
+                                  data_augment=False, 
+                                  use_cache=config["use_cache"], 
+                                  use_pair=use_pair, 
+                                  num_neg=config["num_neg"])
     test_dataset = SeqDataset(data_path=config["test_data_path"], 
                               is_train_test_full="full", 
                               use_pair=use_pair, 
@@ -521,11 +521,11 @@ if __name__=='__main__':
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
         "use_cache": False,                     # whether using cached pair data
-        
+        "use_cached_folds": False,              # whether using cached folds data
 
         # pre-training params
         "pretrain_mode": "normal",              # pre-training mode: CLIP/pair/normal
-        "num_neg": 4,                           # number of negative samples per positive pair if pretrain_mode=="pair"
+        "num_neg": 10,                          # number of negative epitopes for positive para-epi pairs
         "use_part": "pretrain",                 # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
 
         # regularisation
@@ -539,18 +539,23 @@ if __name__=='__main__':
 
         # model_params
         "model_name": model_name,               # type of models
-        "use_CosCLF": False                     # whether to use linear classifier on top of Set.Trans.
+        "use_CosCLF": True                      # whether to use linear classifier on top of Set.Trans.
     }
 
-    if config["pretrain_mode"]=="pair":
-        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_pair.pkl"
-        config["use_pair"] = True if config["pretrain_mode"]=="pair" else False
-    else:
-        config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
-        if config["pretrain_mode"]=="CLIP":
-            config["use_CLIP"] = True
+    if config["use_cached_folds"]:
+        if config["pretrain_mode"]=="pair":
+            config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_pair.pkl"
+            config["use_pair"] = True
         else:
-            config["use_CLIP"] = False
+            config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
+            config["use_pair"] = False
+    else:
+        config["folds_path"] = None
+    
+    if config["pretrain_mode"]=="CLIP":
+        config["use_CLIP"] = True
+    else:
+        config["use_CLIP"] = False
 
 
     print(config)
