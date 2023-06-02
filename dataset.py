@@ -373,11 +373,11 @@ class SeqDataset(torch.utils.data.Dataset):
         if self.use_part == 'pretrain':
             self.data_df = self.data_df.sample(frac=0.1, random_state=42)
         elif self.use_part == 'finetune':
-            self.part = self.part.sample(frac=0.1, random_state=42)
+            self.part = self.data_df.sample(frac=0.1, random_state=42)
             self.data_df = self.data_df.drop(self.part.index)
         else:
             pass
-
+        # print(self.data_df.shape)
         # balance samples to a certain ratio, e.g., pos:neg=1:1
         if self.balance_samples:
             self.balance(ratio=balance_ratio, num_index=self.data_df.shape[0])
@@ -426,6 +426,9 @@ class SeqDataset(torch.utils.data.Dataset):
                         antigen_neg = self.data.iloc[j][1]
                     
                     self.pair_data.append((paratope, antigen_pos, antigen_neg))
+        
+        # save dataset
+        # self.data_df.to_csv(os.path.join(save_path, "cov-dabdab_df.csv"))
 
     def balance(self, ratio, num_index):
         """
@@ -438,17 +441,21 @@ class SeqDataset(torch.utils.data.Dataset):
         # sample negative para-epi pairs and add into dataset
         append_samples = []
         self.data_df = self.data_df.sample(frac=1, random_state=42)
-        for i in range(num_neg_sample):
+        for i in range(self.data_df.shape[0]):
             if self.data_df.iloc[i]["Class"]==1:
                 paratope = self.data_df.iloc[i]["Paratope"]
                 antigen_pos = self.data_df.iloc[i]["Epitope"]
-                j = random.randint(0, len(self.data_df)-1)
-                antigen_neg = self.data_df.iloc[j]["Epitope"]
-                while seq_sim(antigen_neg, antigen_pos)>=0.5:
+
+                t = 0
+                while t<num_neg_sample:
                     j = random.randint(0, len(self.data_df)-1)
-                    antigen_neg = self.data_df.iloc[j][1]
-                    
-                append_samples.append((paratope, antigen_neg))
+                    antigen_neg = self.data_df.iloc[j]["Epitope"]
+                    while seq_sim(antigen_neg, antigen_pos)>=0.5:
+                        j = random.randint(0, len(self.data_df)-1)
+                        antigen_neg = self.data_df.iloc[j][1]
+                        
+                    append_samples.append((paratope, antigen_neg))
+                    t += 1
 
         self.df_append = pd.DataFrame({'Index': [num_index+i for i in range(len(append_samples))], 
                                        'AB_name': ['neg samples']*len(append_samples), 
@@ -456,7 +463,7 @@ class SeqDataset(torch.utils.data.Dataset):
                                        'Paratope': [i[0] for i in append_samples],
                                        'Epitope': [i[1] for i in append_samples]})
         self.data_df = self.data_df.append(self.df_append, ignore_index=True)
-
+        
 
     def __len__(self):
         if self.pretrain_mode=='normal' or self.pretrain_mode=='CLIP':
