@@ -272,11 +272,12 @@ class SAbDabDataset(torch.utils.data.Dataset):
             if save_path!=None:
                 pickle.dump(self.pair_data, open(save_path, "wb"))
             else:
-                print("save to ./data/processed_data_clip{}_neg{}_usepair{}.pkl".format(seq_clip_mode, neg_sample_mode, use_pair))
-                pickle.dump(self.pair_data, open("./data/processed_data_clip{}_neg{}_usepair{}.pkl".format(seq_clip_mode, neg_sample_mode, use_pair), "wb"))
+                print("save to ./data/processed_data_clip{}_neg{}_usepair{}_num_neg{}.pkl".format(seq_clip_mode, neg_sample_mode, use_pair, num_neg))
+                pickle.dump(self.pair_data, open("./data/processed_data_clip{}_neg{}_usepair{}_num_neg{}.pkl".format(seq_clip_mode, neg_sample_mode, use_pair, num_neg), "wb"))
         else:
             print("loading preprocessed data from {}".format(folds_path))
             self.pair_data = pickle.load(open(folds_path, "rb"))
+            
 
         if is_shuffle==True:
             random.shuffle(self.pair_data)

@@ -50,8 +50,8 @@ def prepare_lstm(config):
                              num_layers=1, 
                              dropout=0.5, 
                              use_pretrain=False).cuda()
-    config["epochs"] = 100
-    config["lr"] = 6e-5
+    # config["epochs"] = 100
+    # config["lr"] = 6e-5
 
     return config
 
@@ -62,8 +62,8 @@ def prepare_textcnn(config):
                               max_virus_len=100, 
                               h_dim=512, 
                               dropout=0.1).cuda()
-    config["epochs"] = 100
-    config["lr"] = 1e-4
+    # config["epochs"] = 100
+    # config["lr"] = 1e-4
 
     return config
 
@@ -73,9 +73,9 @@ def prepare_masonscnn(config):
                                 max_virus_len=100, 
                                 h_dim=512, 
                                 dropout=0.1).cuda()
-    config["epochs"] = 300
-    config["lr"] = 1e-4
-    config["l2_coef"] = 5e-4
+    # config["epochs"] = 300
+    # config["lr"] = 1e-4
+    # config["l2_coef"] = 5e-4
 
     return config
 
@@ -85,16 +85,16 @@ def prepare_ag_fast_parapred(config):
                                      max_virus_len=100, 
                                      h_dim=512, 
                                      position_coding=True).cuda()
-    config["epochs"] = 100
-    config["lr"] = 1e-4
+    # config["epochs"] = 100
+    # config["lr"] = 1e-4
 
     return config
 
 def prepare_pipr(config):
     config["model"] = PIPR(protein_ft_one_hot_dim=len(vocab)).cuda()
     
-    config["epochs"] = 300
-    config["lr"] = 1e-4
+    # config["epochs"] = 300
+    # config["lr"] = 1e-4
 
     return config
 
@@ -104,13 +104,34 @@ def prepare_resppi(config):
                              max_virus_len=100, 
                              h_dim=512, 
                              dropout=0.1).cuda()
-    config["epochs"] = 300
-    config["lr"] = 1e-4
+    # config["epochs"] = 300
+    # config["lr"] = 1e-4
 
     return config
 
 def prepare_deepaai(config):
     pass
+
+def prepare_settransformer(config):
+    config["model"] = SetTransformer(dim_input=32, 
+                                     num_outputs=32, 
+                                     dim_output=32, 
+                                     dim_hidden=64, 
+                                     num_inds=6, 
+                                     num_heads=4, 
+                                     ln=True, 
+                                     dropout=0.5, 
+                                     use_coattn=False, 
+                                     share=False, 
+                                     use_BSS=False, 
+                                     use_CLIP=config["use_CLIP"], 
+                                     use_CosCLF=config["use_CosCLF"]).cuda()
+    
+    # config["epochs"] = 100
+    # config["lr"] = 1e-4
+    # config["l2_coef"] = 1e-3
+
+    return config
 
 def prepare_pesi(config):
     config["model"] = SetTransformer(dim_input=32, 
@@ -127,14 +148,14 @@ def prepare_pesi(config):
                                      use_CLIP=config["use_CLIP"], 
                                      use_CosCLF=config["use_CosCLF"]).cuda()
     
-    config["epochs"] = 100
-    config["lr"] = 1e-4
-    config["l2_coef"] = 1e-3
+    # config["epochs"] = 100
+    # config["lr"] = 1e-4
+    # config["l2_coef"] = 1e-3
 
     return config
 
 
-def pre_train(config):
+def pre_train(config, result_path):
 
     # model name
     if config["model_name"]=="lstm":
@@ -153,6 +174,8 @@ def pre_train(config):
         config = prepare_deepaai(config)
     elif config["model_name"]=="pesi":
         config = prepare_pesi(config)
+    elif config["model_name"]=="settransformer":
+        config = prepare_settransformer(config)
     else:
         print("wrong model_name")
         exit()
@@ -167,9 +190,10 @@ def pre_train(config):
     if config["use_L2"]==True:
         config["model_name"] += "_L2"
 
-    print("training {} on SAbDab-full".format(config["model_name"]))
+    print("training {} on SAbDab".format(config["model_name"]))
     
-    os.makedirs("./results/SAbDab/full/{}/{}/".format(config["data_type"], config["model_name"]), exist_ok=True)
+    # os.makedirs("./results/SAbDab/full/{}/{}/".format(config["data_type"], config["model_name"]), exist_ok=True)
+    # os.makedirs(result_path, exist_ok=True)
 
     data = load_data(config["data_path"])
 
@@ -350,48 +374,48 @@ def pre_train(config):
                 # save best loss
                 if np.mean(val_loss_tmp)<best_val_loss:
                     best_val_loss = np.mean(val_loss_tmp)
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_best.pth".format(config["data_type"], config["model_name"]))
-                    np.save("./results/SAbDab/full/{}/{}/val_acc_best.npy".format(config["data_type"], config["model_name"]), acc)
-                    np.save("./results/SAbDab/full/{}/{}/val_f1_best.npy".format(config["data_type"], config["model_name"]), f1)
-                    np.save("./results/SAbDab/full/{}/{}/val_auc_best.npy".format(config["data_type"], config["model_name"]), auc)
-                    np.save("./results/SAbDab/full/{}/{}/val_gmean_best.npy".format(config["data_type"], config["model_name"]), gmean)
-                    np.save("./results/SAbDab/full/{}/{}/val_mcc_best.npy".format(config["data_type"], config["model_name"]), mcc)
+                    torch.save(config["model"], os.path.join(result_path, "model_best.pth"))
+                    np.save(os.path.join(result_path, "val_acc_best.npy"), acc)
+                    np.save(os.path.join(result_path, "val_f1_best.npy"), f1)
+                    np.save(os.path.join(result_path, "val_auc_best.npy"), auc)
+                    np.save(os.path.join(result_path, "val_gmean_best.npy"), gmean)
+                    np.save(os.path.join(result_path, "val_mcc_best.npy"), mcc)
 
                 # save best f1
                 if f1 > best_val_f1:
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestf1.pth".format(config["data_type"], config["model_name"]))
-                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestf1.npy".format(config["data_type"], config["model_name"]), acc)
-                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestf1.npy".format(config["data_type"], config["model_name"]), f1)
-                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestf1.npy".format(config["data_type"], config["model_name"]), auc)
-                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestf1.npy".format(config["data_type"], config["model_name"]), gmean)
-                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestf1.npy".format(config["data_type"], config["model_name"]), mcc)
+                    torch.save(config["model"], os.path.join(result_path, "model_bestf1.pth"))
+                    np.save(os.path.join(result_path, "val_acc_bestf1.npy"), acc)
+                    np.save(os.path.join(result_path, "val_f1_bestf1.npy"), f1)
+                    np.save(os.path.join(result_path, "val_auc_bestf1.npy"), auc)
+                    np.save(os.path.join(result_path, "val_gmean_bestf1.npy"), gmean)
+                    np.save(os.path.join(result_path, "val_mcc_bestf1.npy"), mcc)
 
                 # save best auc
                 if auc > best_val_auc:
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestauc.pth".format(config["data_type"], config["model_name"]))
-                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestauc.npy".format(config["data_type"], config["model_name"]), acc)
-                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestauc.npy".format(config["data_type"], config["model_name"]), f1)
-                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestauc.npy".format(config["data_type"], config["model_name"]), auc)
-                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestauc.npy".format(config["data_type"], config["model_name"]), gmean)
-                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestauc.npy".format(config["data_type"], config["model_name"]), mcc)
+                    torch.save(config["model"], os.path.join(result_path, "model_best.pth"))
+                    np.save(os.path.join(result_path, "val_acc_bestauc.npy"), acc)
+                    np.save(os.path.join(result_path, "val_f1_bestauc.npy"), f1)
+                    np.save(os.path.join(result_path, "val_auc_bestauc.npy"), auc)
+                    np.save(os.path.join(result_path, "val_gmean_bestauc.npy"), gmean)
+                    np.save(os.path.join(result_path, "val_mcc_bestauc.npy"), mcc)
 
                 # save best gmean
                 if gmean > best_val_gmean:
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestgmean.pth".format(config["data_type"], config["model_name"]))
-                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestgmean.npy".format(config["data_type"], config["model_name"]), acc)
-                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestgmean.npy".format(config["data_type"], config["model_name"]), f1)
-                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestgmean.npy".format(config["data_type"], config["model_name"]), auc)
-                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestgmean.npy".format(config["data_type"], config["model_name"]), gmean)
-                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestgmean.npy".format(config["data_type"], config["model_name"]), mcc)
+                    torch.save(config["model"], os.path.join(result_path, "model_best.pth"))
+                    np.save(os.path.join(result_path, "val_acc_bestgmean.npy"), acc)
+                    np.save(os.path.join(result_path, "val_f1_bestgmean.npy"), f1)
+                    np.save(os.path.join(result_path, "val_auc_bestgmean.npy"), auc)
+                    np.save(os.path.join(result_path, "val_gmean_bestgmean.npy"), gmean)
+                    np.save(os.path.join(result_path, "val_mcc_bestgmean.npy"), mcc)
 
                 # save best mcc
                 if mcc > best_val_mcc:
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_bestmcc.pth".format(config["data_type"], config["model_name"]))
-                    np.save("./results/SAbDab/full/{}/{}/val_acc_bestmcc.npy".format(config["data_type"], config["model_name"]), acc)
-                    np.save("./results/SAbDab/full/{}/{}/val_f1_bestmcc.npy".format(config["data_type"], config["model_name"]), f1)
-                    np.save("./results/SAbDab/full/{}/{}/val_auc_bestmcc.npy".format(config["data_type"], config["model_name"]), auc)
-                    np.save("./results/SAbDab/full/{}/{}/val_gmean_bestmcc.npy".format(config["data_type"], config["model_name"]), gmean)
-                    np.save("./results/SAbDab/full/{}/{}/val_mcc_bestmcc.npy".format(config["data_type"], config["model_name"]), mcc)
+                    torch.save(config["model"], os.path.join(result_path, "model_best.pth"))
+                    np.save(os.path.join(result_path, "val_acc_bestmcc.npy"), acc)
+                    np.save(os.path.join(result_path, "val_f1_bestmcc.npy"), f1)
+                    np.save(os.path.join(result_path, "val_auc_bestmcc.npy"), auc)
+                    np.save(os.path.join(result_path, "val_gmean_bestmcc.npy"), gmean)
+                    np.save(os.path.join(result_path, "val_mcc_bestmcc.npy"), mcc)
 
         elif config["pretrain_mode"]=="CLIP":
             with torch.no_grad():
@@ -416,12 +440,10 @@ def pre_train(config):
                 # save best loss
                 if np.mean(val_loss_tmp)<best_val_loss:
                     best_val_loss = np.mean(val_loss_tmp)
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_best.pth".format(config["data_type"], config["model_name"]))
+                    torch.save(config["model"], os.path.join(result_path, "model_best.pth"))
 
         elif config["pretrain_mode"]=="pair":
-#             if np.mean(loss_tmp)<best_train_loss:
-#                 best_train_loss = np.mean(loss_tmp)
-#                 torch.save(model, "./results/SAbDab/full/{}/{}/model_best.pth".format(data_type, model_name))
+
             with torch.no_grad():
 
                 config["model"].eval()
@@ -462,7 +484,7 @@ def pre_train(config):
 
                 if np.mean(val_loss_tmp)<best_val_loss:
                     best_val_loss = np.mean(val_loss_tmp)
-                    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model_best.pth".format(config["data_type"], config["model_name"]))
+                    torch.save(config["model"], os.path.join(result_path, "model_best.pth"))
         else:
             print("Wrong")
             exit()
@@ -476,17 +498,16 @@ def pre_train(config):
 
 
 
-    torch.save(config["model"], "./results/SAbDab/full/{}/{}/model.pth".format(config["data_type"], config["model_name"]))
-    np.save("./results/SAbDab/full/{}/{}/loss_buf.npy".format(config["data_type"], config["model_name"]), np.array(loss_buf))
-    np.save("./results/SAbDab/full/{}/{}/val_loss_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_loss_buf))
-    if config["pretrain_mode"]=="normal":
-        
-        np.save("./results/SAbDab/full/{}/{}/val_acc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_acc_buf))
-        np.save("./results/SAbDab/full/{}/{}/val_f1_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_f1_buf))
-        np.save("./results/SAbDab/full/{}/{}/val_auc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_auc_buf))
-        np.save("./results/SAbDab/full/{}/{}/val_gmean_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_gmean_buf))
-        np.save("./results/SAbDab/full/{}/{}/val_mcc_buf.npy".format(config["data_type"], config["model_name"]), np.array(val_mcc_buf))
-
+    torch.save(config["model"], os.path.join(result_path, "model.pth"))
+    np.save(os.path.join(result_path, "loss_buf.npy"), np.array(loss_buf))
+    np.save(os.path.join(result_path, "val_loss_buf.npy"), np.array(val_loss_buf))
+    
+    if config["pretrain_mode"]=="normal":    
+        np.save(os.path.join(result_path, "val_acc_buf.npy"), np.array(val_acc_buf))
+        np.save(os.path.join(result_path, "val_f1_buf.npy"), np.array(val_f1_buf))
+        np.save(os.path.join(result_path, "val_auc_buf.npy"), np.array(val_auc_buf))
+        np.save(os.path.join(result_path, "val_gmean_buf.npy"), np.array(val_gmean_buf))
+        np.save(os.path.join(result_path, "val_mcc_buf.npy"), np.array(val_mcc_buf))
 
     #     break
     
@@ -512,7 +533,6 @@ if __name__=='__main__':
 
     config = {
         # data type
-        "clip_norm": 1, 
         "seq_clip_mode": 1,                     # how to choose epitope: 0 - random AA sequence as epitope; 1 - k-nearest AA as epitope
         "neg_sample_mode": 0,                   # how to generate negative sample: 0 - random sample with dissimilarity rate 90% 1 - random sequence;
         "data_type": "seq1_neg0", 
@@ -520,12 +540,12 @@ if __name__=='__main__':
                                                 # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
-        "use_cache": False,                     # whether using cached pair data
-        "use_cached_folds": False,              # whether using cached folds data
+        "use_cache": True,                      # whether using cached pair data (knn epitope)
+        "use_cached_folds": False,              # whether using cached folds data ([para, epi_pos, epi_neg])
 
         # pre-training params
         "pretrain_mode": "normal",              # pre-training mode: CLIP/pair/normal
-        "num_neg": 10,                          # number of negative epitopes for positive para-epi pairs
+        "num_neg": 4,                           # number of negative epitopes for positive para-epi pairs
         "use_part": "pretrain",                 # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
 
         # regularisation
@@ -536,11 +556,19 @@ if __name__=='__main__':
         "batch_size": 16,                       # batch size
         "epi_len": 72,                          # max length of epitope
         "use_lr_schedule": False,               # lr scheduler
+        "epochs": 100,                          # number of epochs
+        "lr": 1e-4,                             # learning rate
+        "l2_coef": 1e-3,                        # l2 regulariser coefficient
+        "clip_norm": 1,                         # gradient clipping threshold
 
         # model_params
         "model_name": model_name,               # type of models
-        "use_CosCLF": True                      # whether to use linear classifier on top of Set.Trans.
+        "use_CosCLF": False                     # whether to use linear classifier on top of Set.Trans.
     }
+
+    current_time = time.strftime('%m%d%H%M%S', time.localtime())
+    result_path = "./results/SAbDab/{}_{}".format(config["model_name"], current_time)
+    os.makedirs(result_path)
 
     if config["use_cached_folds"]:
         if config["pretrain_mode"]=="pair":
@@ -559,9 +587,10 @@ if __name__=='__main__':
 
 
     print(config)
+    pickle.dump(config, open(os.path.join(result_path, "config"), "wb"))
 
     # training
-    pre_train(config=config)
+    pre_train(config=config, result_path=result_path)
 
     # print("Results dump to: ")
     # print("./results/SAbDab/full/{}/{}/result.pkl".format(config["data_type"], config["model_name"]))

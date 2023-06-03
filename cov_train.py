@@ -331,6 +331,29 @@ def prepare_resppi(config):
 def prepare_deepaai(config):
     pass
 
+def prepare_settransformer(config):
+    print(config["model_name"])
+
+    if config["model_name"]=="settransformer":
+        config["model"] = SetTransformer(dim_input=32, 
+                                        num_outputs=32, 
+                                        dim_output=32, 
+                                        dim_hidden=64, 
+                                        num_inds=6, 
+                                        num_heads=4, 
+                                        ln=True, 
+                                        dropout=0.5, 
+                                        use_coattn=False, 
+                                        share=False, 
+                                        use_BSS=False, 
+                                        use_CLIP=False, 
+                                        use_CosCLF=False).cuda()
+    elif config["model_name"]=="settransformer_ft":
+        config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/settransformer/model_best.pth")
+        config["model"].train()
+    
+    return config
+
 def prepare_pesi(config):
     print(config["model_name"])
     # if config["use_fine_tune"]==True:
@@ -604,6 +627,8 @@ def cov_train(config, result_path):
             config = prepare_deepaai(config)
         elif config["model_name"][:4]=="pesi" or config["model_name"]=="pesi":
             config = prepare_pesi(config)
+        elif config["model_name"][:13]=="settransformer" or config["model_name"]=="settransformer":
+            config = prepare_settransformer(config)
         else:
             print("wrong model name")
             print(config["model_name"])
