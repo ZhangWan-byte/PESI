@@ -500,10 +500,10 @@ def prepare_pesi(config):
         config["model"].output_layer.load_state_dict(pretrained_model.output_layer.state_dict())
         config["model"].train()
 
-        # params
-        config["epochs"] = 1000
-        config["lr"] = 6e-5
-        config["l2_coef"] = 5e-4  
+        # # params
+        # config["epochs"] = 1000
+        # config["lr"] = 6e-5
+        # config["l2_coef"] = 5e-4  
         
     elif config["model_name"]=="pesi_CosCLF":
         config["model"] = SetTransformer(dim_input=32, 
