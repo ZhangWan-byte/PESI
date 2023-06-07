@@ -349,8 +349,10 @@ def prepare_settransformer(config):
                                         use_CLIP=False, 
                                         use_CosCLF=False).cuda()
     elif config["model_name"]=="settransformer_ft":
-        config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/settransformer/model_best.pth")
+        config["model"] = torch.load("./results/SAbDab/{}/model_best.pth".format(config["best_model_path"]))
         config["model"].train()
+    else:
+        pass
     
     return config
 
@@ -627,7 +629,7 @@ def cov_train(config, result_path):
             config = prepare_deepaai(config)
         elif config["model_name"][:4]=="pesi" or config["model_name"]=="pesi":
             config = prepare_pesi(config)
-        elif config["model_name"][:13]=="settransformer" or config["model_name"]=="settransformer":
+        elif config["model_name"][:14]=="settransformer" or config["model_name"]=="settransformer":
             config = prepare_settransformer(config)
         else:
             print("wrong model name")
