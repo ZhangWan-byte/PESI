@@ -18,7 +18,7 @@
     "batch_size": 16, 
     
     "model_name": "settransformer", 
-    "best_model_path": "settransformer_0603165525", 
+    "best_model_path": "settransformer_0613161142", 
     "epochs": 1000, 
     "lr": 1e-4, 
     "l2_coef": 5e-4,   

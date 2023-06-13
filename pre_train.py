@@ -540,13 +540,13 @@ if __name__=='__main__':
                                                 # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
-        "use_cache": True,                      # whether using cached pair data (knn epitope)
+        "use_cache": False,                     # whether using cached pair data (knn epitope)
         "use_cached_folds": False,              # whether using cached folds data ([para, epi_pos, epi_neg])
 
         # pre-training params
         "pretrain_mode": "normal",              # pre-training mode: CLIP/pair/normal
-        "num_neg": 4,                           # number of negative epitopes for positive para-epi pairs
-        "use_part": "pretrain",                 # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
+        "num_neg": 1,                           # number of negative epitopes for positive para-epi pairs
+        "use_part": "none",                 # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
 
         # regularisation
         "use_L2": False,                        # whether using L2 regularisation for pre-training
