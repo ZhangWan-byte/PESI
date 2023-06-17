@@ -62,6 +62,6 @@ class OASDataset(Dataset):
 
             else:
                 chars[i] = vocab[char]                                      # self.vocab.char2index(char)
-                output_label.append(0)
+                output_label.append(vocab['#'])                             # 0
 
         return chars, output_label
