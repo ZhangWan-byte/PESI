@@ -26,24 +26,21 @@ from pre_train import *
 
 
 def prepare_mlm(config):
-    config["model"] = SetTransformer(dim_input=32, 
-                                     num_outputs=32, 
-                                     dim_output=32, 
-                                     dim_hidden=64, 
-                                     num_inds=6, 
-                                     num_heads=4, 
-                                     ln=True, 
-                                     dropout=0.5, 
-                                     use_coattn=True, 
-                                     share=False, 
-                                     use_BSS=False, 
-                                     use_CLIP=config["use_CLIP"], 
-                                     use_CosCLF=config["use_CosCLF"]).cuda()
+    config["model"] = PESILM(dim_input=32, 
+                             num_outputs=32, 
+                             dim_output=32, 
+                             dim_hidden=64, 
+                             num_inds=6, 
+                             num_heads=4, 
+                             ln=True, 
+                             dropout=0.5, 
+                             use_coattn=True, 
+                             share=False, 
+                             use_BSS=False, 
+                             use_CLIP=config["use_CLIP"], 
+                             use_CosCLF=config["use_CosCLF"]).cuda()
     
-    # config["epochs"] = 100
-    # config["lr"] = 1e-4
-    # config["l2_coef"] = 1e-3
-
+    
     return config
 
 
@@ -164,6 +161,19 @@ def oas_train(config, result_path):
 if __name__=='__main__':
 
     set_seed(seed=3407)
+
+    config = {
+        # data type
+        "data_path": "./OAS/oas_data.pkl",      # data path for general antibody-antigen dataset
+
+        # learning params
+        "batch_size": 16,                       # batch size
+        "epi_len": 72,                          # max length of epitope
+        "use_lr_schedule": False,               # lr scheduler
+        "epochs": 100,                          # number of epochs
+        "lr": 1e-4,                             # learning rate
+        "clip_norm": 1,                         # gradient clipping threshold
+    }
 
     current_time = time.strftime('%m%d%H%M%S', time.localtime())
     config["current_time"] = current_time
