@@ -59,7 +59,7 @@ class OASDataset(torch.utils.data.Dataset):
 
                 # 10% randomly change token to random token
                 elif prob < 0.9:
-                    chars[i] = random.randrange(22)                         # self.vocab.vocab_size
+                    chars[i] = random.randrange(len(vocab))                 # self.vocab.vocab_size
 
                 # 10% randomly change token to current token
                 else:
