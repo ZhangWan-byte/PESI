@@ -162,10 +162,9 @@ if __name__=='__main__':
         "data_path": "./OAS/oas_data.pkl",      # data path for general antibody-antigen dataset
 
         # learning params
-        "batch_size": 16,                       # batch size
-        "epi_len": 72,                          # max length of epitope
+        "batch_size": 64,                       # batch size
         "use_lr_schedule": False,               # lr scheduler
-        "epochs": 100,                          # number of epochs
+        "epochs": 1000,                         # number of epochs
         "lr": 1e-4,                             # learning rate
         "clip_norm": 1,                         # gradient clipping threshold
     }
