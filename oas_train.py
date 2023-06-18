@@ -52,13 +52,7 @@ def oas_train(config, result_path):
     # model name
     config = prepare_mlm(config=config)
 
-    if config["use_L2"]==True:
-        config["model_name"] += "_L2"
-
-    print("training {} on SAbDab".format(config["model_name"]))
-    
-    # os.makedirs("./results/SAbDab/full/{}/{}/".format(config["data_type"], config["model_name"]), exist_ok=True)
-    # os.makedirs(result_path, exist_ok=True)
+    print("training {} on OAS starting...")
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -162,7 +156,7 @@ def oas_train(config, result_path):
         config["model"].train()
 
 
-    torch.save(config["model"], os.path.join(result_path, "mlm_model.pth"))
+    torch.save(config["model"], os.path.join(result_path, "model.pth"))
     np.save(os.path.join(result_path, "loss_buf.npy"), np.array(loss_buf))
     np.save(os.path.join(result_path, "val_loss_buf.npy"), np.array(val_loss_buf))
 
@@ -172,24 +166,10 @@ if __name__=='__main__':
     set_seed(seed=3407)
 
     current_time = time.strftime('%m%d%H%M%S', time.localtime())
-    result_path = "./results/SAbDab/{}_{}".format(config["model_name"], current_time)
-    os.makedirs(result_path)
+    config["current_time"] = current_time
 
-    if config["use_cached_folds"]:
-        if config["pretrain_mode"]=="pair":
-            config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_pair.pkl"
-            config["use_pair"] = True
-        else:
-            config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
-            config["use_pair"] = False
-    else:
-        config["folds_path"] = None
-    
-    if config["pretrain_mode"]=="CLIP":
-        config["use_CLIP"] = True
-    else:
-        config["use_CLIP"] = False
-
+    result_path = "./results/OAS/{}".format(config["current_time"])
+    os.makedirs(result_path, exist_ok=True)
 
     print(config)
     pickle.dump(config, open(os.path.join(result_path, "config"), "wb"))
