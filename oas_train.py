@@ -106,7 +106,6 @@ def oas_train(config, result_path):
         if config["use_lr_schedule"]:
             scheduler.step()
         print("lr: ", optimizer.param_groups[0]['lr'])
-        # print("train loss {:.4f}\n".format(np.mean(loss_buf)))
 
 
         # evaluate
@@ -120,7 +119,7 @@ def oas_train(config, result_path):
             for i, data in enumerate(tqdm(train_loader)):
 
                 data = {key: value.to(device) for key, value in data.items()}
-                mask_lm_output, attn_list = config["model"].forward(data["mlm_input"], data["input_position"])
+                mask_lm_output, attn_list = config["model"].forward(data["mlm_input"])
                 val_loss = criterion(mask_lm_output.transpose(1, 2), data["mlm_label"])
 
                 preds.append((mask_lm_output.detach().cpu(), attn_list.detach().cpu()))
