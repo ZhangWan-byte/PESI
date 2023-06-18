@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from dataset import *
+from datasets import *
 from utils import *
 from models import *
 

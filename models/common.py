@@ -9,7 +9,7 @@ from torch.nn.utils.weight_norm import WeightNorm
 
 import esm
 
-from dataset import *
+from datasets import *
 from utils import *
 
 

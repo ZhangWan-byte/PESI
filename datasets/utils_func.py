@@ -235,3 +235,34 @@ def my_collate_fn1(batch):
 
 def my_collate_fn2(batch):
     return collate_fn(batch, mode=0, use_augment=True)
+
+def pad1d(x, max_len):
+    return np.pad(x, (0, max_len - len(x)), mode='constant', constant_values=vocab['#'])
+
+# collate func for MLM
+def collate_mlm(batch):
+
+    input_lens = [len(x[0]) for x in batch]
+    max_x_len = max(input_lens)
+
+    # chars
+    chars_pad = [pad1d(x[0], max_x_len) for x in batch]
+    chars = np.stack(chars_pad)
+
+    # labels
+    labels_pad = [pad1d(x[1], max_x_len) for x in batch]
+    labels = np.stack(labels_pad)
+
+    # position
+    position = [pad1d(range(1, len + 1), max_x_len) for len in input_lens]
+    position = np.stack(position)
+
+    chars = torch.tensor(chars).long()
+    labels = torch.tensor(labels).long()
+    position = torch.tensor(position).long()
+
+    output = {"mlm_input": chars,
+              "mlm_label": labels,
+              "input_position": position}
+
+    return output

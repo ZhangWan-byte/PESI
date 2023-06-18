@@ -18,7 +18,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from Bio import Align
 
-from dataset import *
+from datasets import *
 from utils import *
 from models import *
 from cov_train import *

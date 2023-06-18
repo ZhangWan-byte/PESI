@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-from dataset import *
+from datasets import *
 from utils import *
 from .common import *
 

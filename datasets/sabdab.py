@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from utils import *
-from utils_func import *
+from .utils_func import *
 
 
 # SAbDab

@@ -9,15 +9,22 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from utils import *
-from utils_func import *
+from .utils_func import *
 
 
-class OASDataset(Dataset):
-    def __init__(self, corpus_path, vocab):
+class OASDataset(torch.utils.data.Dataset):
+    def __init__(self, corpus_path, vocab, train_test='train'):
         self.corpus_path = corpus_path
         self.vocab = vocab
+        self.train_test = train_test
 
         self.lines = pickle.load(open(corpus_path, "rb"))
+        random.seed(42)
+        random.shuffle(self.lines)
+        if self.train_test=='train':
+            self.lines = self.lines[:int(0.9*len(self.lines))]
+        if self.train_test=='test':
+            self.lines = self.lines[int(0.9*len(self.lines)):]
         self.len_lines = len(self.lines)
 
     def __len__(self):
@@ -29,8 +36,8 @@ class OASDataset(Dataset):
         t1_random, t1_label = self.random_word(t)
 
         # + = start, - = end, * = mask, # = pad, / = sep
-        mlm_input = ['+'] + t1_random + ['-']
-        mlm_label = ['#'] + t1_label + ['#']
+        mlm_input = [self.vocab['+']] + t1_random + [self.vocab['-']]
+        mlm_label = [self.vocab['#']] + t1_label + [self.vocab['#']]
 
         return mlm_input, mlm_label
 
@@ -62,6 +69,6 @@ class OASDataset(Dataset):
 
             else:
                 chars[i] = vocab[char]                                      # self.vocab.char2index(char)
-                output_label.append(vocab['#'])                             # 0
+                output_label.append(0)
 
         return chars, output_label
