@@ -18,7 +18,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from Bio import Align
 
-from dataset import *
+from datasets import *
 from utils import *
 from models import *
 from cov_train import *
@@ -29,9 +29,9 @@ def prepare_mlm(config):
     config["model"] = PESILM(vocab_size=len(vocab), 
                              dim_input=32, 
                              dim_hidden=64, 
-                             num_outputs=32, 
+                             num_outputs=128, 
                              dim_output=32, 
-                             num_inds=6, 
+                             num_inds=128, # fix sent len for masking
                              num_heads=4, 
                              ln=True, 
                              dropout=0.5).cuda()
@@ -44,7 +44,7 @@ def oas_train(config, result_path):
     # model name
     config = prepare_mlm(config=config)
 
-    print("training {} on OAS starting...")
+    print("training on OAS starting...")
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -87,7 +87,7 @@ def oas_train(config, result_path):
             data = {key: value.to(device) for key, value in data.items()}
 
             # 1. forward masked_lm model
-            mask_lm_output, attn_list = config["model"].forward(data["mlm_input"], data["input_position"])
+            mask_lm_output, attn_list = config["model"].forward(data["mlm_input"])
 
             # 2. NLLLoss of predicting masked token word
             optimizer.zero_grad()
@@ -99,10 +99,6 @@ def oas_train(config, result_path):
             optimizer.step()
 
             # loss
-            running_loss += loss.item()
-            avg_loss = running_loss / (i + 1)
-
-
             loss_tmp.append(loss.item())
             
         loss_buf.append(np.mean(loss_tmp))
@@ -159,10 +155,10 @@ if __name__=='__main__':
 
     config = {
         # data type
-        "data_path": "./OAS/oas_data.pkl",      # data path for general antibody-antigen dataset
+        "oas_path": "./OAS/oas_data.pkl",       # data path for general antibody-antigen dataset
 
         # learning params
-        "batch_size": 64,                       # batch size
+        "batch_size": 1024,                     # batch size
         "use_lr_schedule": False,               # lr scheduler
         "epochs": 1000,                         # number of epochs
         "lr": 1e-4,                             # learning rate

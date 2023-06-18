@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from datasets import *
 from utils import *
 from .common import *
+from .setmodel import *
 
 
 class PESILM(nn.Module):
@@ -35,11 +36,14 @@ class PESILM(nn.Module):
         super().__init__()
 
         self.embedding = nn.Embedding(vocab_size, dim_input)
+        
         self.enc = nn.ModuleList([
             ISAB(dim_input, dim_hidden, num_heads, num_inds, ln=ln),
             ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln)])
+        
         self.co_attn = CoAttention(embed_size=dim_hidden, output_size=dim_hidden, return_attn=True)
-        self.para_dec = nn.ModuleList([
+        
+        self.dec = nn.ModuleList([
             PMA(dim_hidden, num_heads, num_outputs, ln=ln),
             SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
             SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
@@ -47,24 +51,30 @@ class PESILM(nn.Module):
 
         self.mask_lm = MaskedLanguageModel(dim_hidden, vocab_size)
 
-    def forward(self, x, mask=None, query_mask=None):
+    def forward(self, x):
 
         if self.training:
             c_mask = x.ne(0).type(torch.float)
             mask = x.eq(0).unsqueeze(1).repeat(1, x.size(1), 1)
         else:
             c_mask, mask = None, None
-
+        
+        # embedding
+        x = self.embedding(x)
+        # print("within PESILM!!!!!!!", mask.shape, c_mask.shape)
         # encoder
         for enc_layer in self.enc:
-            x = enc_layer(x, mask=mask, query_mask=query_mask)
+            x = enc_layer(x, mask=mask, query_mask=c_mask)
         
         # co-attention
         x, _, attn_list, _ = self.co_attn(x, x)
 
         # decoder
         for dec_layer in self.dec:
-            x = dec_layer(x, mask=mask, query_mask=query_mask)
+            if isinstance(dec_layer, nn.Linear):
+                x = dec_layer(x)
+            else:
+                x = dec_layer(x, mask=mask, query_mask=c_mask)
 
         # x, attn_list = self.pesi(x)
 

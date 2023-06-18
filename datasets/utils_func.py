@@ -242,8 +242,9 @@ def pad1d(x, max_len):
 # collate func for MLM
 def collate_mlm(batch):
 
-    input_lens = [len(x[0]) for x in batch]
-    max_x_len = max(input_lens)
+    # input_lens = [len(x[0]) for x in batch]
+    # max_x_len = max(input_lens)
+    max_x_len = 128
 
     # chars
     chars_pad = [pad1d(x[0], max_x_len) for x in batch]

@@ -16,6 +16,7 @@ from .common import *
 class MAB(nn.Module):
     def __init__(self, dim_Q, dim_K, dim_V, num_heads, ln=False):
         super(MAB, self).__init__()
+        self.dim_K = dim_K
         self.dim_V = dim_V
         self.num_heads = num_heads
         self.fc_q = nn.Linear(dim_Q, dim_V)
@@ -27,21 +28,33 @@ class MAB(nn.Module):
         self.fc_o = nn.Linear(dim_V, dim_V)
 
     def forward(self, Q, K, mask=None, query_mask=None):
+        # print("within MAB!!!!!!!!!!!!!", mask.shape, query_mask.shape)
+        # pickle.dump(Q, open("./Q.pkl", "wb"))
+
         Q = self.fc_q(Q)
         K, V = self.fc_k(K), self.fc_v(K)
-
+        # print("QKV shape: ", Q.shape, K.shape, V.shape)
         dim_split = self.dim_V // self.num_heads
         Q_ = torch.cat(Q.split(dim_split, 2), 0)
         K_ = torch.cat(K.split(dim_split, 2), 0)
         V_ = torch.cat(V.split(dim_split, 2), 0)
 
         attn = Q_.bmm(K_.transpose(1,2))/math.sqrt(self.dim_V)
+        # pickle.dump(attn, open("./attn.pkl", "wb"))
 
+        # Repeat masks h times
+        if query_mask is not None:
+            query_mask = query_mask.unsqueeze(-1).repeat(1, 1, Q.size(1))
+            query_mask = query_mask.repeat(self.num_heads, 1, 1)  # （32，169，169）————>(128,169,169)
+        if mask is not None:
+            mask = mask.repeat(self.num_heads, 1, 1)  # （32，169，169）————>(128,169,169)
+        # pickle.dump(query_mask, open("./query_mask.pkl", "wb"))
+        # pickle.dump(mask, open("./mask.pkl", "wb"))
         if mask is not None:
             attn = attn.masked_fill(mask, -2 ** 32 + 1)
 
         A = torch.softmax(attn, 2)
-
+        # pickle.dump(A , open("./A.pkl", "wb"))
         if query_mask is not None:
             A = A * query_mask
 
@@ -71,6 +84,7 @@ class ISAB(nn.Module):
         self.mab1 = MAB(dim_in, dim_out, dim_out, num_heads, ln=ln)
 
     def forward(self, X, mask=None, query_mask=None):
+        # print("within ISAB!!!!!!!!!", mask.shape, query_mask.shape)
         H = self.mab0(self.I.repeat(X.size(0), 1, 1), X, mask, query_mask)
         return self.mab1(X, H, mask, query_mask)
 

@@ -11,6 +11,7 @@ from .TextCNN import *
 from .AgFastParapred import *
 from .PIPR import *
 from .ResPPI import *
+from .mlm import *
 
 
 def build_model(config, use_pretrain=False):
