@@ -84,7 +84,7 @@ class PositionalEncoding(nn.Module):
 
 
 class CoAttention(nn.Module):
-    def __init__(self, embed_size, output_size, dropout=None):
+    def __init__(self, embed_size, output_size, dropout=None, return_attn=False):
         super(CoAttention, self).__init__()
 
         self.dropout = dropout
@@ -93,6 +93,7 @@ class CoAttention(nn.Module):
         self.linear_b = nn.Linear(embed_size, output_size)
         self.W = nn.Linear(output_size, output_size)
         self._init_weight()
+        self.return_attn = return_attn
     
     def _init_weight(self):
         for m in self.modules():
@@ -139,8 +140,10 @@ class CoAttention(nn.Module):
 
         # print(att_row.unsqueeze(2).shape)
         # print(a.shape, b.shape)
-
-        return a, b
+        if not self.return_attn:
+            return a, b
+        else:
+            return a, b, att_row, att_col
 
 
 class distLinear(nn.Module):

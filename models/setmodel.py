@@ -26,7 +26,7 @@ class MAB(nn.Module):
             self.ln1 = nn.LayerNorm(dim_V)
         self.fc_o = nn.Linear(dim_V, dim_V)
 
-    def forward(self, Q, K):
+    def forward(self, Q, K, mask=None, query_mask=None):
         Q = self.fc_q(Q)
         K, V = self.fc_k(K), self.fc_v(K)
 
@@ -35,20 +35,32 @@ class MAB(nn.Module):
         K_ = torch.cat(K.split(dim_split, 2), 0)
         V_ = torch.cat(V.split(dim_split, 2), 0)
 
-        A = torch.softmax(Q_.bmm(K_.transpose(1,2))/math.sqrt(self.dim_V), 2)
+        attn = Q_.bmm(K_.transpose(1,2))/math.sqrt(self.dim_V)
+
+        if mask is not None:
+            attn = attn.masked_fill(mask, -2 ** 32 + 1)
+
+        A = torch.softmax(attn, 2)
+
+        if query_mask is not None:
+            A = A * query_mask
+
         O = torch.cat((Q_ + A.bmm(V_)).split(Q.size(0), 0), 2)
         O = O if getattr(self, 'ln0', None) is None else self.ln0(O)
         O = O + F.relu(self.fc_o(O))
         O = O if getattr(self, 'ln1', None) is None else self.ln1(O)
+
         return O
+
 
 class SAB(nn.Module):
     def __init__(self, dim_in, dim_out, num_heads, ln=False):
         super(SAB, self).__init__()
         self.mab = MAB(dim_in, dim_in, dim_out, num_heads, ln=ln)
 
-    def forward(self, X):
-        return self.mab(X, X)
+    def forward(self, X, mask=None, query_mask=None):
+        return self.mab(X, X, mask, query_mask)
+
 
 class ISAB(nn.Module):
     def __init__(self, dim_in, dim_out, num_heads, num_inds, ln=False):
@@ -58,9 +70,10 @@ class ISAB(nn.Module):
         self.mab0 = MAB(dim_out, dim_in, dim_out, num_heads, ln=ln)
         self.mab1 = MAB(dim_in, dim_out, dim_out, num_heads, ln=ln)
 
-    def forward(self, X):
-        H = self.mab0(self.I.repeat(X.size(0), 1, 1), X)
-        return self.mab1(X, H)
+    def forward(self, X, mask=None, query_mask=None):
+        H = self.mab0(self.I.repeat(X.size(0), 1, 1), X, mask, query_mask)
+        return self.mab1(X, H, mask, query_mask)
+
 
 class PMA(nn.Module):
     def __init__(self, dim, num_heads, num_seeds, ln=False):
@@ -69,8 +82,8 @@ class PMA(nn.Module):
         nn.init.xavier_uniform_(self.S)
         self.mab = MAB(dim, dim, dim, num_heads, ln=ln)
 
-    def forward(self, X):
-        return self.mab(self.S.repeat(X.size(0), 1, 1), X)
+    def forward(self, X, mask=None, query_mask=None):
+        return self.mab(self.S.repeat(X.size(0), 1, 1), X, mask, query_mask)
 
 
 class SetEncoder(nn.Module):
@@ -119,6 +132,10 @@ class SetTransformer(nn.Module):
                  use_CLIP=False, 
                  use_CosCLF=False):
         super(SetTransformer, self).__init__()
+        """
+        :num_outputs: number of tokens
+        :dim_output: output dim of decoder
+        """
 
         self.use_coattn = use_coattn
         self.use_BSS = use_BSS

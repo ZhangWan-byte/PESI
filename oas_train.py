@@ -26,20 +26,15 @@ from pre_train import *
 
 
 def prepare_mlm(config):
-    config["model"] = PESILM(dim_input=32, 
+    config["model"] = PESILM(vocab_size=len(vocab), 
+                             dim_input=32, 
+                             dim_hidden=64, 
                              num_outputs=32, 
                              dim_output=32, 
-                             dim_hidden=64, 
                              num_inds=6, 
                              num_heads=4, 
                              ln=True, 
-                             dropout=0.5, 
-                             use_coattn=True, 
-                             share=False, 
-                             use_BSS=False, 
-                             use_CLIP=config["use_CLIP"], 
-                             use_CosCLF=config["use_CosCLF"]).cuda()
-    
+                             dropout=0.5).cuda()
     
     return config
 

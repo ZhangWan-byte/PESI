@@ -253,16 +253,10 @@ def collate_mlm(batch):
     labels_pad = [pad1d(x[1], max_x_len) for x in batch]
     labels = np.stack(labels_pad)
 
-    # position
-    position = [pad1d(range(1, len + 1), max_x_len) for len in input_lens]
-    position = np.stack(position)
-
     chars = torch.tensor(chars).long()
     labels = torch.tensor(labels).long()
-    position = torch.tensor(position).long()
 
     output = {"mlm_input": chars,
-              "mlm_label": labels,
-              "input_position": position}
+              "mlm_label": labels}
 
     return output
