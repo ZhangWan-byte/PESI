@@ -160,10 +160,10 @@ def prepare_pesi(config):
 
     else:
         config["model"] = SetTransformer(dim_input=32, 
-                                        num_outputs=32, 
+                                        num_outputs=128, 
                                         dim_output=32, 
                                         dim_hidden=64, 
-                                        num_inds=6, 
+                                        num_inds=128, 
                                         num_heads=4, 
                                         ln=True, 
                                         dropout=0.5, 
@@ -172,6 +172,19 @@ def prepare_pesi(config):
                                         use_BSS=False, 
                                         use_CLIP=config["use_CLIP"], 
                                         use_CosCLF=config["use_CosCLF"]).cuda()
+        # config["model"] = SetTransformer(dim_input=32, 
+        #                                 num_outputs=32, 
+        #                                 dim_output=32, 
+        #                                 dim_hidden=64, 
+        #                                 num_inds=6, 
+        #                                 num_heads=4, 
+        #                                 ln=True, 
+        #                                 dropout=0.5, 
+        #                                 use_coattn=True, 
+        #                                 share=False, 
+        #                                 use_BSS=False, 
+        #                                 use_CLIP=config["use_CLIP"], 
+        #                                 use_CosCLF=config["use_CosCLF"]).cuda()
     
     # config["epochs"] = 100
     # config["lr"] = 1e-4
@@ -570,7 +583,7 @@ if __name__=='__main__':
 
         # pre-training params
         "pretrain_mode": "normal",              # pre-training mode: CLIP/pair/normal
-        "oas_pretrain": "/home/user/wanzhang/Transformer4Ab-locla/results/OAS/0619031446/model_best.pth",
+        "oas_pretrain": None,
                                                 # OAS-pretrained model for PESI
         "num_neg": 1,                           # number of negative epitopes for positive para-epi pairs
         "use_part": "none",                     # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
@@ -602,8 +615,8 @@ if __name__=='__main__':
             config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0_pair.pkl"
             config["use_pair"] = True
         else:
-            config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
-            # config["folds_path"] = "./data/processed_data_clip1_neg0_usepairFalse_num_neg1.pkl"
+            # config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
+            config["folds_path"] = "./data/processed_data_clip1_neg0_usepairFalse_num_neg1.pkl"
             config["use_pair"] = False
     else:
         config["folds_path"] = None
