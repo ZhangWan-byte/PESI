@@ -160,35 +160,35 @@ class SetTransformer(nn.Module):
         
         self.share = share
         if self.share==True:
-            self.enc = nn.Sequential(
+            self.enc = nn.ModuleList([
                     ISAB(dim_input, dim_hidden, num_heads, num_inds, ln=ln),
-                    ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln))
+                    ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln)])
             
-            self.dec = nn.Sequential(
+            self.dec = nn.ModuleList([
                     PMA(dim_hidden, num_heads, num_outputs, ln=ln),
                     SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
                     SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
-                    nn.Linear(dim_hidden, dim_output))
+                    nn.Linear(dim_hidden, dim_output)])
         else:
-            self.para_enc = nn.Sequential(
+            self.para_enc = nn.ModuleList([
                     ISAB(dim_input, dim_hidden, num_heads, num_inds, ln=ln),
-                    ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln))
+                    ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln)])
             
-            self.para_dec = nn.Sequential(
+            self.para_dec = nn.ModuleList([
                     PMA(dim_hidden, num_heads, num_outputs, ln=ln),
                     SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
                     SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
-                    nn.Linear(dim_hidden, dim_hidden))
+                    nn.Linear(dim_hidden, dim_hidden)])
 
-            self.epi_enc = nn.Sequential(
+            self.epi_enc = nn.ModuleList([
                     ISAB(dim_input, dim_hidden, num_heads, num_inds, ln=ln),
-                    ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln))
+                    ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln)])
             
-            self.epi_dec = nn.Sequential(
+            self.epi_dec = nn.ModuleList([
                     PMA(dim_hidden, num_heads, num_outputs, ln=ln),
                     SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
                     SAB(dim_hidden, dim_hidden, num_heads, ln=ln),
-                    nn.Linear(dim_hidden, dim_hidden))
+                    nn.Linear(dim_hidden, dim_hidden)])
 
         if self.use_coattn==True:
             self.co_attn = CoAttention(embed_size=dim_hidden, output_size=dim_hidden)
@@ -204,7 +204,7 @@ class SetTransformer(nn.Module):
                                               nn.Linear(dim_hidden//2, 1), nn.Sigmoid())
 
 
-    def forward(self, para, epi):
+    def forward(self, para, epi, mask=None, query_mask=None):
         # embedding
         para, epi = torch.Tensor([to_onehot(i) for i in para]).int().cuda(), torch.Tensor([to_onehot(i) for i in epi]).int().cuda()
         para = self.embedding(para)
@@ -213,29 +213,37 @@ class SetTransformer(nn.Module):
 
         if self.share==True:
             # encoder
-            para = self.enc(para)
-            epi = self.enc(epi)
+            for layer in self.enc:
+                para = layer(para)
+            for layer in self.enc:
+                epi = layer(epi)
             # (batch, seq_len, hidden) / (batch, num_inds, dim_hidden)
 
             if self.use_coattn==True:
                 para, epi = self.co_attn(para, epi)
 
             # decoder
-            para = self.dec(para)
-            epi = self.dec(epi)
+            for layer in self.dec:
+                para = layer(para)
+            for layer in self.dec:
+                epi = layer(epi)
             # (batch, seq_len, embed_size) / (batch, num_inds, dim_output)
         else:
             # encoder
-            para = self.para_enc(para)
-            epi = self.epi_enc(epi)
+            for layer in self.para_enc:
+                para = layer(para)
+            for layer in self.epi_enc:
+                epi = layer(epi)
             # (batch, seq_len, hidden) / (batch, num_inds, dim_hidden)
 
             if self.use_coattn==True:
                 para, epi = self.co_attn(para, epi)
 
             # decoder
-            para = self.para_dec(para)
-            epi = self.epi_dec(epi)
+            for layer in self.para_dec:
+                para = layer(para)
+            for layer in self.epi_dec:
+                epi = layer(epi)
             # (batch, seq_len, embed_size) / (batch, num_inds, dim_output)
 
 

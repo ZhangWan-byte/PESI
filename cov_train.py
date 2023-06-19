@@ -382,7 +382,8 @@ def prepare_pesi(config):
         
     elif config["model_name"]=="SetTransformer_ft":
 
-        config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/SetTransformer/model_best.pth")
+        config["model"] = torch.load(config["model_path"])
+        print("load pre-trained model from {}".format(config["model_path"]))
         config["model"].train()
 
         if config["fix_FE"]==True:
@@ -434,8 +435,10 @@ def prepare_pesi(config):
         
     elif config["model_name"]=="pesi_ft":
         if config["use_BSS"]==False:
-            config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
+            # config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
             # config["model"] = torch.load("./model_best.pth")
+            config["model"] = torch.load(config["model_path"])
+            print("load pre-trained model from {}".format(config["model_path"]))
             config["model"].train()
 
             if config["fix_FE"]==True:

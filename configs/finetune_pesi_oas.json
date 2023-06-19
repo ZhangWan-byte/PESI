@@ -1,0 +1,29 @@
+{
+    "data_type": "seq1_neg0", 
+    "data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
+
+    "use_fine_tune": "normal",
+    "model_path": "/home/user/wanzhang/Transformer4Ab-locla/results/SAbDab/pesi_0619162144/model_best.pth", 
+    "fix_FE": 0, 
+    "use_pair": 0, 
+
+    "balance_samples": 0, 
+    "balance_ratio": 0, 
+    
+    "use_reg": 0, 
+    "use_BSS": 0, 
+    "use_aug": 1, 
+    
+    "ntimes": 1, 
+    "kfold": 10, 
+    "batch_size": 16, 
+    
+    "model_name": "pesi", 
+    "epochs": 1000, 
+    "lr": 6e-5, 
+    "l2_coef": 5e-4,   
+    
+    "clip_norm": 0.5, 
+    "diff_lr": 0, 
+    "use_part": "finetune"
+}

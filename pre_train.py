@@ -134,19 +134,44 @@ def prepare_settransformer(config):
     return config
 
 def prepare_pesi(config):
-    config["model"] = SetTransformer(dim_input=32, 
-                                     num_outputs=32, 
-                                     dim_output=32, 
-                                     dim_hidden=64, 
-                                     num_inds=6, 
-                                     num_heads=4, 
-                                     ln=True, 
-                                     dropout=0.5, 
-                                     use_coattn=True, 
-                                     share=False, 
-                                     use_BSS=False, 
-                                     use_CLIP=config["use_CLIP"], 
-                                     use_CosCLF=config["use_CosCLF"]).cuda()
+    if config["oas_pretrain"]!=None:
+        ckpt = torch.load(config["oas_pretrain"])
+        config["model"] = SetTransformer(dim_input=32, 
+                                        num_outputs=128, 
+                                        dim_output=32, 
+                                        dim_hidden=64, 
+                                        num_inds=128, 
+                                        num_heads=4, 
+                                        ln=True, 
+                                        dropout=0.5, 
+                                        use_coattn=True, 
+                                        share=False, 
+                                        use_BSS=False, 
+                                        use_CLIP=config["use_CLIP"], 
+                                        use_CosCLF=config["use_CosCLF"]).cuda()
+
+        config["model"].embedding.load_state_dict(ckpt.embedding.state_dict())
+        config["model"].para_enc.load_state_dict(ckpt.enc.state_dict())
+        config["model"].para_dec.load_state_dict(ckpt.dec.state_dict())
+        config["model"].epi_enc.load_state_dict(ckpt.enc.state_dict())
+        config["model"].epi_dec.load_state_dict(ckpt.dec.state_dict())
+        config["model"].co_attn.load_state_dict(ckpt.co_attn.state_dict())
+        config["model"].train()
+
+    else:
+        config["model"] = SetTransformer(dim_input=32, 
+                                        num_outputs=32, 
+                                        dim_output=32, 
+                                        dim_hidden=64, 
+                                        num_inds=6, 
+                                        num_heads=4, 
+                                        ln=True, 
+                                        dropout=0.5, 
+                                        use_coattn=True, 
+                                        share=False, 
+                                        use_BSS=False, 
+                                        use_CLIP=config["use_CLIP"], 
+                                        use_CosCLF=config["use_CosCLF"]).cuda()
     
     # config["epochs"] = 100
     # config["lr"] = 1e-4
@@ -540,13 +565,15 @@ if __name__=='__main__':
                                                 # data path for general antibody-antigen dataset
         "test_data_path": "../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv", 
                                                 # data path for SARS-CoV-2 antibody-antigen dataset
-        "use_cache": False,                     # whether using cached pair data (knn epitope)
-        "use_cached_folds": False,              # whether using cached folds data ([para, epi_pos, epi_neg])
+        "use_cache": True,                      # whether using cached pair data (knn epitope)
+        "use_cached_folds": True,               # whether using cached folds data ([para, epi_pos, epi_neg])
 
         # pre-training params
         "pretrain_mode": "normal",              # pre-training mode: CLIP/pair/normal
+        "oas_pretrain": "/home/user/wanzhang/Transformer4Ab-locla/results/OAS/0619031446/model_best.pth",
+                                                # OAS-pretrained model for PESI
         "num_neg": 1,                           # number of negative epitopes for positive para-epi pairs
-        "use_part": "none",                 # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
+        "use_part": "none",                     # whether use part of cov-abdab as validation for model selection: pretrain/finetune/none
 
         # regularisation
         "use_L2": False,                        # whether using L2 regularisation for pre-training
@@ -555,7 +582,7 @@ if __name__=='__main__':
         # learning params
         "batch_size": 16,                       # batch size
         "epi_len": 72,                          # max length of epitope
-        "use_lr_schedule": False,               # lr scheduler
+        "use_lr_schedule": True,                # lr scheduler
         "epochs": 100,                          # number of epochs
         "lr": 1e-4,                             # learning rate
         "l2_coef": 1e-3,                        # l2 regulariser coefficient
@@ -576,6 +603,7 @@ if __name__=='__main__':
             config["use_pair"] = True
         else:
             config["folds_path"] = "../Transformer4Ab/data/processed_data_clip1_neg0.pkl"
+            # config["folds_path"] = "./data/processed_data_clip1_neg0_usepairFalse_num_neg1.pkl"
             config["use_pair"] = False
     else:
         config["folds_path"] = None
