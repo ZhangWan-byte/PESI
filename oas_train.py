@@ -126,8 +126,7 @@ def oas_train(config, result_path):
                 labels.append(data["mlm_label"])
                 val_loss_tmp.append(val_loss.item())
 
-            # preds = torch.hstack(preds).view(-1)
-            # labels = torch.hstack(labels).view(-1)
+            val_loss_buf.append(np.mean(val_loss_tmp))
 
             print("Epoch {}: \n Train Loss\t{:.4f} \n Val Loss\t{:.4f} \n".format(epoch, np.mean(loss_tmp), np.mean(val_loss_tmp)))
 
@@ -159,7 +158,7 @@ if __name__=='__main__':
         # learning params
         "batch_size": 1024,                     # batch size
         "use_lr_schedule": False,               # lr scheduler
-        "epochs": 1000,                         # number of epochs
+        "epochs": 100,                          # number of epochs
         "lr": 1e-4,                             # learning rate
         "clip_norm": 1,                         # gradient clipping threshold
     }
