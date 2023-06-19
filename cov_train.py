@@ -435,25 +435,51 @@ def prepare_pesi(config):
         
     elif config["model_name"]=="pesi_ft":
         if config["use_BSS"]==False:
-            # config["model"] = torch.load("./results/SAbDab/full/seq1_neg0/pesi/model_best.pth")
-            # config["model"] = torch.load("./model_best.pth")
-            config["model"] = torch.load(config["model_path"])
-            print("load pre-trained model from {}".format(config["model_path"]))
-            config["model"].train()
+            if config["model_path"]!="":
+                config["model"] = torch.load(config["model_path"])
+                print("load pre-trained model from {}".format(config["model_path"]))
+                config["model"].train()
 
-            if config["fix_FE"]==True:
-                for name, param in config["model"].para_enc.named_parameters():
-                    param.requires_grad = False
-                for name, param in config["model"].para_dec.named_parameters():
-                    param.requires_grad = False
-                for name, param in config["model"].epi_enc.named_parameters():
-                    param.requires_grad = False
-                for name, param in config["model"].epi_dec.named_parameters():
-                    param.requires_grad = False
-            
-            config["epochs"] = 200
-            config["lr"] = 6e-5
-            config["l2_coef"] = 5e-4
+                if config["fix_FE"]==True:
+                    for name, param in config["model"].para_enc.named_parameters():
+                        param.requires_grad = False
+                    for name, param in config["model"].para_dec.named_parameters():
+                        param.requires_grad = False
+                    for name, param in config["model"].epi_enc.named_parameters():
+                        param.requires_grad = False
+                    for name, param in config["model"].epi_dec.named_parameters():
+                        param.requires_grad = False
+                
+                config["epochs"] = 200
+                config["lr"] = 6e-5
+                config["l2_coef"] = 5e-4
+            else:
+                ckpt = torch.load(config["oas_pretrain"])
+                config["model"] = SetTransformer(dim_input=32, 
+                                                num_outputs=128, 
+                                                dim_output=32, 
+                                                dim_hidden=64, 
+                                                num_inds=128, 
+                                                num_heads=4, 
+                                                ln=True, 
+                                                dropout=0.5, 
+                                                use_coattn=True, 
+                                                share=False, 
+                                                use_BSS=False, 
+                                                use_CLIP=False, 
+                                                use_CosCLF=False).cuda()
+
+                config["model"].embedding.load_state_dict(ckpt.embedding.state_dict())
+                config["model"].para_enc.load_state_dict(ckpt.enc.state_dict())
+                config["model"].para_dec.load_state_dict(ckpt.dec.state_dict())
+                config["model"].epi_enc.load_state_dict(ckpt.enc.state_dict())
+                config["model"].epi_dec.load_state_dict(ckpt.dec.state_dict())
+                config["model"].co_attn.load_state_dict(ckpt.co_attn.state_dict())
+                config["model"].train()
+
+                config["epochs"] = 200
+                config["lr"] = 6e-5
+                config["l2_coef"] = 5e-4
             # model = SetTransformer(dim_input=32, 
             #                     num_outputs=32, 
             #                     dim_output=32, 
