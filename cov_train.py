@@ -454,7 +454,9 @@ def prepare_pesi(config):
                 config["lr"] = 6e-5
                 config["l2_coef"] = 5e-4
             else:
-                ckpt = torch.load(config["oas_pretrain"])
+                ckpt_para = torch.load(config["oas_pretrain"])
+                ckpt_epi = torch.load(config["sabdab_pretrain"])
+
                 config["model"] = SetTransformer(dim_input=32, 
                                                 num_outputs=128, 
                                                 dim_output=32, 
@@ -469,12 +471,12 @@ def prepare_pesi(config):
                                                 use_CLIP=False, 
                                                 use_CosCLF=False).cuda()
 
-                config["model"].embedding.load_state_dict(ckpt.embedding.state_dict())
-                config["model"].para_enc.load_state_dict(ckpt.enc.state_dict())
-                config["model"].para_dec.load_state_dict(ckpt.dec.state_dict())
-                config["model"].epi_enc.load_state_dict(ckpt.enc.state_dict())
-                config["model"].epi_dec.load_state_dict(ckpt.dec.state_dict())
-                config["model"].co_attn.load_state_dict(ckpt.co_attn.state_dict())
+                config["model"].embedding.load_state_dict(ckpt_para.embedding.state_dict())
+                config["model"].para_enc.load_state_dict(ckpt_para.enc.state_dict())
+                config["model"].para_dec.load_state_dict(ckpt_para.dec.state_dict())
+                config["model"].epi_enc.load_state_dict(ckpt_epi.enc.state_dict())
+                config["model"].epi_dec.load_state_dict(ckpt_epi.dec.state_dict())
+                config["model"].co_attn.load_state_dict(ckpt_para.co_attn.state_dict())
                 config["model"].train()
 
                 config["epochs"] = 200
