@@ -19,7 +19,15 @@ def get_random_sequence(length=48):
     return antigen_neg
 
 
-def get_pair(data, epi_seq_length=800, seq_clip_mode=1, neg_sample_mode=1, num_neg=1, K=48, use_cache=False, use_pair=False):
+def get_pair(data, 
+             epi_seq_length=800, 
+             seq_clip_mode=1, 
+             neg_sample_mode=1, 
+             num_neg=1, 
+             K=48, 
+             use_cache=False, 
+             use_pair=False, 
+             only_epitope=False):
     
     """process original data to format in pairs
 
@@ -145,6 +153,9 @@ def get_pair(data, epi_seq_length=800, seq_clip_mode=1, neg_sample_mode=1, num_n
             for t in range(len(redundant_negs)):
                 if redundant_negs[t]==False:
                     pair_data.append((paratope, antigen_negs[t], 0))
+
+            if only_epitope:
+                pair_data = list(filter(lambda x:x[-1]==1, pair_data))
         else:
             redundant = [False]*num_neg
             for i in range(len(pair_data)):
