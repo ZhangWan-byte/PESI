@@ -158,7 +158,7 @@ if __name__=='__main__':
         # learning params
         "batch_size": 1024,                     # batch size
         "use_lr_schedule": False,               # lr scheduler
-        "epochs": 100,                          # number of epochs
+        "epochs": 1000,                         # number of epochs
         "lr": 1e-4,                             # learning rate
         "clip_norm": 1,                         # gradient clipping threshold
     }
