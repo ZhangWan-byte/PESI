@@ -25,7 +25,7 @@ class SAbDabDataset_MLM(torch.utils.data.Dataset):
                               neg_sample_mode=0, 
                               num_neg=1, 
                               K=48, 
-                              use_cache=False, 
+                              use_cache=True, 
                               use_pair=False, 
                               only_epitope=True)
         self.lines = [i[1].strip("#") for i in self.lines]

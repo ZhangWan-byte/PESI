@@ -48,9 +48,9 @@ def sabdab_train(config, result_path):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    train_dataset = SAbDabDataset(corpus_path=config["sabdab_path"], vocab=vocab, train_test='train')
+    train_dataset = SAbDabDataset_MLM(corpus_path=config["sabdab_path"], vocab=vocab, train_test='train')
 
-    test_dataset = SAbDabDataset(corpus_path=config["sabdab_path"], vocab=vocab, train_test='test')
+    test_dataset = SAbDabDataset_MLM(corpus_path=config["sabdab_path"], vocab=vocab, train_test='test')
 
     train_loader = torch.utils.data.DataLoader(train_dataset, 
                                                 batch_size=config["batch_size"], 
