@@ -455,7 +455,10 @@ def prepare_pesi(config):
                 config["l2_coef"] = 5e-4
             else:
                 ckpt_para = torch.load(config["oas_pretrain"])
-                ckpt_epi = torch.load(config["sabdab_pretrain"])
+                if "sabdab_train" in config.keys():
+                    ckpt_epi = torch.load(config["sabdab_pretrain"])
+                else:
+                    ckpt_epi = ckpt_para
 
                 config["model"] = SetTransformer(dim_input=32, 
                                                 num_outputs=128, 
