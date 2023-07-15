@@ -328,9 +328,6 @@ def prepare_resppi(config):
 
     return config
 
-def prepare_deepaai(config):
-    pass
-
 def prepare_settransformer(config):
     print(config["model_name"])
 
@@ -413,25 +410,9 @@ def prepare_pesi(config):
                                          dropout=0.5, 
                                          use_coattn=True, 
                                          share=False, 
-                                         use_BSS=config["use_BSS"]).cuda()
-
-        # # pesi small
-        # print("pesi_small!!!!!")
-        # config["model"] = SetTransformer(dim_input=32, 
-        #                                  num_outputs=32, 
-        #                                  dim_output=32, 
-        #                                  dim_hidden=32, 
-        #                                  num_inds=6, 
-        #                                  num_heads=4, 
-        #                                  ln=True, 
-        #                                  dropout=0.5, 
-        #                                  use_coattn=True, 
-        #                                  share=False, 
-        #                                  use_BSS=config["use_BSS"]).cuda()
-        
-        # config["epochs"] = 200
-        # config["lr"] = 6e-5
-        # config["l2_coef"] = 5e-4
+                                         use_BSS=False,
+                                         use_CLIP=False, 
+                                         use_CosCLF=False).cuda()
         
     elif config["model_name"]=="pesi_ft":
         if config["use_BSS"]==False:
@@ -883,7 +864,7 @@ if __name__=='__main__':
     with open(args.config) as json_file:
         config = json.load(json_file)
     
-    # alter int to boolean
+    # alter int to boolean in config files
     for k in config:
         if config[k]==1:
             config[k]=True

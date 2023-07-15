@@ -17,7 +17,7 @@
     "kfold": 10, 
     "batch_size": 16, 
     
-    "model_name": "pesi", 
+    "model_name": "textcnn", 
     "epochs": 1000, 
     "lr": 6e-5, 
     "l2_coef": 5e-4,   
