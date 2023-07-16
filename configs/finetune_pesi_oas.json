@@ -4,7 +4,7 @@
 
     "use_fine_tune": "normal",
     "model_path": "", 
-    "oas_pretrain": "/home/user/wanzhang/Transformer4Ab-locla/results/OAS/0619031446/model_best.pth", 
+    "oas_pretrain": "/home/user/wanzhang/Trans4Ab/Transformer4Ab-locla/results/OAS/0716130156/model_best.pth", 
     "fix_FE": 0, 
     "use_pair": 0, 
 
@@ -20,7 +20,7 @@
     "batch_size": 16, 
     
     "model_name": "pesi", 
-    "epochs": 1000, 
+    "epochs": 200, 
     "lr": 6e-5, 
     "l2_coef": 5e-4,   
     
