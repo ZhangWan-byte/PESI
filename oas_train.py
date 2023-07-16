@@ -120,7 +120,7 @@ def oas_train(config, result_path):
             preds = []
             labels = []
             val_loss_tmp = []
-            for i, data in enumerate(tqdm(train_loader)):
+            for i, data in enumerate(tqdm(test_loader)):
 
                 data = {key: value.to(device) for key, value in data.items()}
                 mask_lm_output, attn_list = config["model"].forward(data["mlm_input"])
@@ -158,10 +158,11 @@ if __name__=='__main__':
     config = {
         # data type
         "oas_path": "./OAS/oas_data.pkl",       # data path for general antibody-antigen dataset
+        "cov_path": "/home/user/wanzhang/SARS-SAbDab_Shaun/CoV-AbDab_extract.csv",   # data path for cov-abdab dataset
 
         # learning params
         "batch_size": 1024,                     # batch size
-        "use_lr_schedule": False,               # lr scheduler
+        "use_lr_schedule": True,                # lr scheduler
         "epochs": 100,                          # number of epochs
         "lr": 1e-4,                             # learning rate
         "clip_norm": 1,                         # gradient clipping threshold
