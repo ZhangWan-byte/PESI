@@ -719,6 +719,7 @@ def cov_train(config, result_path):
             ], lr=config["lr"])
         
         # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-6, last_epoch=-1)
+        scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=100, eta_min=1e-6, last_epoch=-1)
 
         loss_buf = []
         val_loss_buf = []
@@ -779,7 +780,7 @@ def cov_train(config, result_path):
             
             loss_buf.append(np.mean(loss_tmp))
 
-        #     scheduler.step()
+            scheduler.step()
             print("lr: ", optimizer.param_groups[0]['lr'])
 
             with torch.no_grad():
@@ -828,6 +829,8 @@ def cov_train(config, result_path):
                     np.save("{}/val_auc_{}_best.npy".format(result_path, k_iter), auc)
                     np.save("{}/val_gmean_{}_best.npy".format(result_path, k_iter), gmean)
                     np.save("{}/val_mcc_{}_best.npy".format(result_path, k_iter), mcc)
+                    np.save("{}/val_preds_{}.npy".format(result_path, k_iter), preds)
+                    np.save("{}/val_labels_{}.npy".format(result_path, k_iter), labels)
 
             config["model"].train()
         
