@@ -1,0 +1,28 @@
+{
+    "data_type": "seq1_neg0", 
+    "data_path": "/home/user/wanzhang/SARS-SAbDab_Shaun/CoV-AbDab_sequence.csv", 
+
+    "use_fine_tune": "None",
+    "fix_FE": 0, 
+    "use_pair": 0, 
+
+    "balance_samples": 0, 
+    "balance_ratio": 0, 
+    
+    "use_reg": 0, 
+    "use_BSS": 0, 
+    "use_aug": 0, 
+    
+    "ntimes": 3, 
+    "kfold": 10, 
+    "batch_size": 16, 
+    
+    "model_name": "pipr", 
+    "epochs": 1000, 
+    "lr": 6e-5, 
+    "l2_coef": 5e-4,   
+    
+    "clip_norm": 0.5, 
+    "diff_lr": 0, 
+    "use_part": "None"
+}

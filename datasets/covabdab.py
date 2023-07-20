@@ -31,6 +31,7 @@ class SeqDataset(torch.utils.data.Dataset):
         self.use_part = use_part
 
         self.data_df = pd.read_csv(data_path)
+        self.data_df = self.data_df.dropna()
 
         # use part of dataset as validation for pre-training
         # rest of data for k-fold
