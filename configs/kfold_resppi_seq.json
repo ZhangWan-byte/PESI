@@ -11,7 +11,7 @@
     
     "use_reg": 0, 
     "use_BSS": 0, 
-    "use_aug": 0, 
+    "use_aug": 1, 
     
     "ntimes": 3, 
     "kfold": 10, 
