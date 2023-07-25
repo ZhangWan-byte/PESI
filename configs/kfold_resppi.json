@@ -22,7 +22,7 @@
     "lr": 6e-5, 
     "l2_coef": 5e-4,   
     
-    "clip_norm": 1, 
+    "clip_norm": 0.5, 
     "diff_lr": 0, 
     "use_part": "None"
 }
