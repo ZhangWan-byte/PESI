@@ -442,7 +442,7 @@ def prepare_pesi(config):
                 #     ckpt_epi = ckpt_para
 
                 ckpt = torch.load(config["oas_pretrain"])
-
+                print("loading pre-trained model from {}".format(config["oas_pretrain"]))
                 config["model"] = SetTransformer(dim_input=32, 
                                                 num_outputs=128, 
                                                 dim_output=32, 
