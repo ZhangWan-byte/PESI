@@ -1,15 +1,10 @@
-# Co-Attention Interactive Transformer for Antibody-Antigen Binary Binding Prediction
+# PESI: Paratope-Epitope Set Interaction for SARS-CoV-2 Neutralization Prediction
 
-## Models
+## Environment
+- System: Ubuntu 20.04.6 LTS
+- CPU: 24 12th Gen Intel(R) Core(TM) i9-12900KF
+- GPU: NVIDIA GeForce RTX 3090 24G
 
-- BiLSTM
-- Vanilla Transformer
-- Co-Attn Transformer
-- Set Transformer
+## Running 10-fold experiments
 
-## Data
-
-- Cov-AbDab
-- SAbDab
-- Absolut! (Only generates CDRH3)
-- Other Binding Affinity Dataset Used in Previous Literatures
+```python cov_train.py --config ./configs/demo_config.json```
