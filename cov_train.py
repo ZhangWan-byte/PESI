@@ -408,7 +408,7 @@ def prepare_pesi(config):
                                          num_heads=4, 
                                          ln=True, 
                                          dropout=0.5, 
-                                         use_coattn=True, 
+                                         use_coattn=config["use_coattn"], 
                                          share=False, 
                                          use_BSS=False,
                                          use_CLIP=False, 
@@ -451,7 +451,7 @@ def prepare_pesi(config):
                                                 num_heads=4, 
                                                 ln=True, 
                                                 dropout=0.5, 
-                                                use_coattn=True, 
+                                                use_coattn=config["use_coattn"], 
                                                 share=False, 
                                                 use_BSS=False, 
                                                 use_CLIP=False, 
@@ -468,7 +468,8 @@ def prepare_pesi(config):
                 config["model"].para_dec.load_state_dict(ckpt.dec.state_dict())
                 # config["model"].epi_enc.load_state_dict(ckpt.enc.state_dict())
                 # config["model"].epi_dec.load_state_dict(ckpt.dec.state_dict())
-                config["model"].co_attn.load_state_dict(ckpt.co_attn.state_dict())
+                if config["use_coattn"]:
+                    config["model"].co_attn.load_state_dict(ckpt.co_attn.state_dict())
                 config["model"].train()
 
                 # config["epochs"] = 200
