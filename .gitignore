@@ -2,7 +2,10 @@
 /.vscode
 /.ipynb_checkpoints
 /__pycache__
-/data
+/data/processed_data_clip1_neg0_usepairFalse_num_neg1.pkl
+/data/processed_data_clip1_neg0_usepairFalse_num_neg4.pkl
+/data/processed_data_clip1_neg0_usepairFalse.pkl
+/data/tmp_knnepi.pkl
 /results
 *.pkl
 *.pth
