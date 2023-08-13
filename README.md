@@ -10,3 +10,7 @@ TODO: to be further cleaned.
 ## Running 10-fold experiments
 
 ```python cov_train.py --config ./configs/demo_config.json```
+
+## Supplementary File
+
+- PESI_SupplementaryMaterial.pdf
