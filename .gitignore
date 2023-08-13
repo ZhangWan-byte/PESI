@@ -10,4 +10,4 @@
 *.pkl
 *.pth
 *.pyc
-/OAS/*.csv
+/data/OAS/*.csv

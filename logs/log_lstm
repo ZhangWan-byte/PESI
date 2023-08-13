@@ -1,7 +1,0 @@
-{'clip_norm': 1, 'seq_clip_mode': 1, 'neg_sample_mode': 0, 'data_type': 'seq1_neg0', 'data_path': './data/data_list.pkl', 'test_data_path': '../SARS-SAbDab_Shaun/CoV-AbDab_extract.csv', 'use_cache': True, 'use_L2': False, 'use_pair': False, 'num_neg': 4, 'use_reg': 0, 'use_BSS': False, 'batch_size': 16, 'epi_len': 72, 'model_name': 'lstm', 'folds_path': './data/processed_data_clip1_neg0.pkl'}
-Traceback (most recent call last):
-  File "pre_train.py", line 614, in <module>
-    pre_train(config=config)
-  File "pre_train.py", line 149, in pre_train
-    if config["use_pair"]==True:
-TypeError: 'NoneType' object is not subscriptable
