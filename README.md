@@ -11,6 +11,9 @@ TODO: to be further cleaned.
 
 ```python cov_train.py --config ./configs/demo_config.json```
 
+## Verions after error correction
+- PESI_BIBM_2023.pdf
+
 ## Supplementary File
 
 - PESI_SupplementaryMaterial.pdf
